@@ -1,0 +1,80 @@
+{% extends "core/base_app.html" %}
+{% load game_tags %}
+
+{% block title %}Dashboard — Dungeons & Deadlines{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl space-y-6">
+  <div>
+    <h1 class="page-title">Bem-vindo, {{ user.full_name|truncatewords:1|default:"Herói" }}</h1>
+    <p class="page-subtitle">Suas próximas batalhas aguardam.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="glass-card stat-card">
+      <div class="stat-label text-primary">🏆 Nível</div>
+      <div class="stat-value text-primary">{{ avatar.level }}</div>
+      <div class="stat-sub">{{ avatar.xp }}/{{ avatar.xp_to_next }} XP</div>
+    </div>
+    <div class="glass-card stat-card">
+      <div class="stat-label text-gold">🪙 Ouro</div>
+      <div class="stat-value text-gold">{{ avatar.gold }}</div>
+      <div class="stat-sub">Gaste na loja</div>
+    </div>
+    <div class="glass-card stat-card">
+      <div class="stat-label text-xp">⚔️ XP Total</div>
+      <div class="stat-value text-xp">{{ avatar.total_xp }}</div>
+      <div class="stat-sub">Acumulado</div>
+    </div>
+  </div>
+
+  <div class="glass-card" style="padding:1.5rem;">
+    <div class="section-header">
+      <h2 class="section-title" style="margin:0;">Próximas batalhas</h2>
+      <a href="{% url 'tasks' %}" style="font-size:0.875rem;">Ver todas →</a>
+    </div>
+    {% if pending_tasks %}
+    <div class="task-list">
+      {% for task in pending_tasks %}
+      {% with m=task.difficulty|monster %}
+      <div class="task-item">
+        <div>
+          <div class="task-item-title">{{ task.title }}</div>
+          <div class="task-item-meta">
+            <span class="{{ m.css_class }}">{{ m.monster }} ({{ task.difficulty }})</span> ·
+            Vence {{ task.due_date|date:"d/m/Y H:i" }}
+          </div>
+        </div>
+        <div class="task-rewards">
+          <div class="text-xp">+{{ m.xp }} XP</div>
+          <div class="text-gold">+{{ m.gold }} ouro</div>
+        </div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      Nenhuma tarefa pendente. <a href="{% url 'task_create' %}">Crie sua primeira missão.</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="stats-grid">
+    {% for diff, data in difficulties.items %}
+    <div class="glass-card" style="padding:1rem;">
+      <div class="{{ data.css_class }}" style="font-size:1.5rem;font-weight:700;">{{ data.monster }}</div>
+      <div class="text-muted" style="font-size:0.75rem;text-transform:uppercase;">{{ diff }}</div>
+      <div style="font-size:0.875rem;margin-top:0.5rem;">
+        <span class="text-xp">+{{ data.xp }} XP</span> · <span class="text-gold">+{{ data.gold }} ouro</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="flex-wrap-gap">
+    <a href="{% url 'task_create' %}" class="btn btn-primary glow">⚔️ Nova tarefa</a>
+    <a href="{% url 'daily' %}" class="btn btn-secondary">📅 Missões do dia</a>
+  </div>
+</div>
+{% endblock %}

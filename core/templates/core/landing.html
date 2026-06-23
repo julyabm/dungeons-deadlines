@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dungeons & Deadlines — Derrote a procrastinação{% endblock %}
+
+{% block body %}
+<header class="landing-header container">
+  <div class="landing-logo">
+    <span>⚔️</span>
+    <span>Dungeons & Deadlines</span>
+  </div>
+  <a href="{% url 'login' %}" class="btn btn-primary glow">Entrar</a>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <span class="hero-badge">✨ Sistema de produtividade gamificado</span>
+    <h1>
+      Derrote a procrastinação
+      <span class="hero-gradient">como um herói.</span>
+    </h1>
+    <p>
+      Cada tarefa é um monstro. Conclua para ganhar XP, ouro e itens. Suba de nível, equipe seu avatar e
+      domine o ranking entre amigos.
+    </p>
+    <div class="hero-actions">
+      <a href="{% url 'register' %}" class="btn btn-primary glow">Criar meu herói</a>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="glass-card" style="padding:1.5rem;">
+      <div class="feature-icon">⚔️</div>
+      <h3 style="margin-top:1rem;">Combata tarefas</h3>
+      <p class="text-muted" style="font-size:0.875rem;margin-top:0.5rem;">Slimes fáceis, ogros médios, dragões difíceis. Cada vitória te recompensa.</p>
+    </div>
+    <div class="glass-card" style="padding:1.5rem;">
+      <div class="feature-icon">🛡️</div>
+      <h3 style="margin-top:1rem;">Equipe seu avatar</h3>
+      <p class="text-muted" style="font-size:0.875rem;margin-top:0.5rem;">Escudos, espadas e poções compradas com o ouro das missões.</p>
+    </div>
+    <div class="glass-card" style="padding:1.5rem;">
+      <div class="feature-icon">🏆</div>
+      <h3 style="margin-top:1rem;">Suba no ranking</h3>
+      <p class="text-muted" style="font-size:0.875rem;margin-top:0.5rem;">Adicione amigos e compete pelo topo da tabela de XP.</p>
+    </div>
+  </section>
+</main>
+{% endblock %}

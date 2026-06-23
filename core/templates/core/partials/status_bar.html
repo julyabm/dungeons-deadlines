@@ -1,0 +1,34 @@
+{% if avatar %}
+<div class="status-bar">
+  <div style="display:flex;align-items:center;gap:0.5rem;">
+    <div class="status-avatar">{{ user.full_name|first|upper|default:"H" }}</div>
+    <div class="hidden-sm">
+      <div style="font-size:0.875rem;font-weight:600;">{{ user.full_name|default:"Herói" }}</div>
+      <div class="text-muted" style="font-size:0.75rem;">⭐ Nível {{ avatar.level }}</div>
+    </div>
+  </div>
+
+  <div class="status-bar-group">
+    <div class="status-bar-label">❤️ <span>{{ avatar.hp }}/{{ avatar.max_hp }}</span></div>
+    <div class="progress">
+      <div class="progress-hp" style="width:{% widthratio avatar.hp avatar.max_hp 100 %}%;"></div>
+    </div>
+  </div>
+
+  <div class="status-bar-group">
+    <div class="status-bar-label">⚡ <span>{{ avatar.xp }}/{{ xp_to_next }} XP</span></div>
+    <div class="progress">
+      <div class="progress-xp" style="width:{% widthratio avatar.xp xp_to_next 100 %}%;"></div>
+    </div>
+  </div>
+
+  <div class="status-gold">
+    <span>🪙</span>
+    <span class="text-gold">{{ avatar.gold }}</span>
+  </div>
+
+  {% if active_xp_boost and active_xp_boost.is_active %}
+  <div class="status-boost">⚡ +25% XP ativo</div>
+  {% endif %}
+</div>
+{% endif %}

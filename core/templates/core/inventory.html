@@ -1,0 +1,49 @@
+{% extends "core/base_app.html" %}
+
+{% block title %}Inventário — Dungeons & Deadlines{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl space-y-6">
+  <div>
+    <h1 class="page-title">Inventário</h1>
+    <p class="page-subtitle">Use consumíveis ou equipe itens permanentes.</p>
+  </div>
+
+  {% if inventory_items %}
+  <div class="shop-grid">
+    {% for row in inventory_items %}
+    <div class="glass-card shop-item">
+      <div class="shop-item-icon">{{ row.item.icon }}</div>
+      <div class="shop-item-name">{{ row.item.name }}</div>
+      <div class="text-muted" style="font-size:0.75rem;">{{ row.item.item_type }} · x{{ row.quantity }}</div>
+      <p class="shop-item-desc">{{ row.item.description }}</p>
+      <div class="shop-item-footer">
+        {% if row.is_equipped %}
+        <span class="text-primary" style="font-size:0.875rem;">Equipado</span>
+        {% endif %}
+        <div class="task-actions">
+          {% if row.item.item_type == 'Consumível' %}
+          <form method="post" action="{% url 'use_item' row.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Usar</button>
+          </form>
+          {% elif row.item.item_type == 'Equipamento' %}
+          <form method="post" action="{% url 'toggle_equip' row.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary btn-sm">
+              {% if row.is_equipped %}Desequipar{% else %}Equipar{% endif %}
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass-card empty-state">
+    Inventário vazio. Visite a <a href="{% url 'shop' %}">loja</a>.
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

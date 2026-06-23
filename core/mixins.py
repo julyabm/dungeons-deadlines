@@ -1,0 +1,55 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.urls import reverse_lazy
+
+from django.utils import timezone
+
+from core.services.game import process_overdue
+
+
+class ActiveUserMixin(LoginRequiredMixin):
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and not request.user.is_active:
+            return redirect('account_disabled')
+        return super().dispatch(request, *args, **kwargs)
+
+
+class GameContextMixin(ActiveUserMixin):
+    overdue_session_key = 'overdue_processed_session'
+
+    def dispatch(self, request, *args, **kwargs):
+        response = super().dispatch(request, *args, **kwargs)
+        if request.user.is_authenticated and hasattr(request.user, 'avatar'):
+            if not request.session.get(self.overdue_session_key):
+                process_overdue(request.user.avatar)
+                request.session[self.overdue_session_key] = True
+        return response
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        if self.request.user.is_authenticated and hasattr(self.request.user, 'avatar'):
+            avatar = self.request.user.avatar
+            context['avatar'] = avatar
+            context['xp_to_next'] = avatar.xp_to_next
+            context['active_xp_boost'] = avatar.active_effects.filter(
+                kind='xp_boost',
+                expires_at__gt=timezone.now(),
+            ).first()
+        return context
+
+
+class SuccessMessageMixin:
+    success_message = ''
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        if self.success_message:
+            messages.success(self.request, self.success_message)
+        return response
+
+    def delete(self, request, *args, **kwargs):
+        response = super().delete(request, *args, **kwargs)
+        if self.success_message:
+            messages.success(self.request, self.success_message)
+        return response

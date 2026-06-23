@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro — Dungeons & Deadlines{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="glass-card auth-card">
+    <div class="landing-logo" style="justify-content:center;margin-bottom:1.5rem;">
+      <span>⚔️</span>
+      <span>Dungeons & Deadlines</span>
+    </div>
+    <h1 style="text-align:center;font-size:1.5rem;margin:0 0 1.5rem;">Criar herói</h1>
+
+    {% if form.errors %}
+    <div class="form-errors">
+      {% for field in form %}
+        {% for error in field.errors %}<div>{{ error }}</div>{% endfor %}
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.help_text %}<small class="text-muted">{{ field.help_text }}</small>{% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary glow" style="width:100%;">Criar herói</button>
+    </form>
+
+    <p class="text-center text-muted" style="margin-top:1.5rem;font-size:0.875rem;">
+      Já tem conta? <a href="{% url 'login' %}">Entrar</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

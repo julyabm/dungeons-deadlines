@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Conta desativada — Dungeons & Deadlines{% endblock %}
+
+{% block body %}
+<div class="container">
+  <div class="glass-card auth-card text-center">
+    <div style="font-size:3rem;margin-bottom:1rem;">🚫</div>
+    <h1 style="font-size:1.5rem;margin:0 0 1rem;">Conta desativada</h1>
+    <p class="text-muted">Seu acesso à plataforma foi desativado por um administrador. Entre em contato para mais informações.</p>
+    <form method="post" action="{% url 'logout' %}" style="margin-top:1.5rem;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-secondary">Sair</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "core/base_app.html" %}
+
+{% block title %}Amigos — Dungeons & Deadlines{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl space-y-6">
+  <div>
+    <h1 class="page-title">Amigos</h1>
+    <p class="page-subtitle">Adicione amigos pelo nome de usuário e dispute o ranking.</p>
+  </div>
+
+  <div class="glass-card" style="padding:1.5rem;max-width:28rem;">
+    <h2 class="section-title">Adicionar amigo</h2>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-group">
+        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}<div class="form-error">{{ error }}</div>{% endfor %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary">Enviar pedido</button>
+    </form>
+  </div>
+
+  {% if pending_received %}
+  <div class="tab-section">
+    <h2 class="section-title">Pedidos recebidos</h2>
+    <div class="task-list">
+      {% for f in pending_received %}
+      <div class="task-item">
+        <div>
+          <div class="task-item-title">{{ f.user_from.full_name }}</div>
+          <div class="task-item-meta">@{{ f.user_from.username }}</div>
+        </div>
+        <div class="task-actions">
+          <form method="post" action="{% url 'friend_accept' f.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Aceitar</button>
+          </form>
+          <form method="post" action="{% url 'friend_reject' f.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-destructive btn-sm">Recusar</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if pending_sent %}
+  <div class="tab-section">
+    <h2 class="section-title">Pedidos enviados</h2>
+    <div class="task-list">
+      {% for f in pending_sent %}
+      <div class="task-item">
+        <div>
+          <div class="task-item-title">{{ f.user_to.full_name }}</div>
+          <div class="task-item-meta">@{{ f.user_to.username }} · Pendente</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="tab-section">
+    <h2 class="section-title">🏆 Ranking de XP</h2>
+    {% if ranking %}
+    <div class="ranking-list">
+      {% for player in ranking %}
+      <div class="ranking-item{% if player == user %} self{% endif %}">
+        <div style="display:flex;align-items:center;gap:0.75rem;">
+          <span class="ranking-pos">#{{ forloop.counter }}</span>
+          <div>
+            <div class="task-item-title">{{ player.full_name }}{% if player == user %} (você){% endif %}</div>
+            <div class="task-item-meta">@{{ player.username }} · Nível {{ player.avatar.level }}</div>
+          </div>
+        </div>
+        <span class="text-xp">{{ player.avatar.total_xp }} XP</span>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">Adicione amigos para ver o ranking.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
