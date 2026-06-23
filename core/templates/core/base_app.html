@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="app-layout">
+  <aside class="app-sidebar">
+    <a href="{% url 'dashboard' %}" class="app-sidebar-logo">
+      <span>⚔️</span> Dungeons & Deadlines
+    </a>
+    <nav class="app-nav">
+      <a href="{% url 'dashboard' %}" class="app-nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">📊 Dashboard</a>
+      <a href="{% url 'tasks' %}" class="app-nav-link{% if 'task' in request.resolver_match.url_name %} active{% endif %}">⚔️ Tarefas</a>
+      <a href="{% url 'daily' %}" class="app-nav-link{% if request.resolver_match.url_name == 'daily' %} active{% endif %}">📅 Missões do Dia</a>
+      <a href="{% url 'shop' %}" class="app-nav-link{% if request.resolver_match.url_name == 'shop' %} active{% endif %}">🏪 Loja</a>
+      <a href="{% url 'inventory' %}" class="app-nav-link{% if request.resolver_match.url_name == 'inventory' %} active{% endif %}">🎒 Inventário</a>
+      <a href="{% url 'friends' %}" class="app-nav-link{% if request.resolver_match.url_name == 'friends' %} active{% endif %}">👥 Amigos</a>
+    </nav>
+    <form method="post" action="{% url 'logout' %}" style="margin-top:auto;">
+      {% csrf_token %}
+      <button type="submit" class="app-nav-link" style="width:100%;background:none;border:none;cursor:pointer;text-align:left;">🚪 Sair</button>
+    </form>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-header">
+      {% include "core/partials/status_bar.html" %}
+    </header>
+    <main class="app-content">
+      {% include "core/partials/messages.html" %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+
+  <nav class="mobile-nav">
+    <a href="{% url 'dashboard' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">📊</a>
+    <a href="{% url 'tasks' %}" class="mobile-nav-link{% if 'task' in request.resolver_match.url_name %} active{% endif %}">⚔️</a>
+    <a href="{% url 'daily' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'daily' %} active{% endif %}">📅</a>
+    <a href="{% url 'shop' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'shop' %} active{% endif %}">🏪</a>
+    <a href="{% url 'inventory' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'inventory' %} active{% endif %}">🎒</a>
+    <a href="{% url 'friends' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'friends' %} active{% endif %}">👥</a>
+  </nav>
+</div>
+{% endblock %}

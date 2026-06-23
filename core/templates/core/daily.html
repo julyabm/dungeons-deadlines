@@ -1,0 +1,46 @@
+{% extends "core/base_app.html" %}
+{% load game_tags %}
+
+{% block title %}Missões do Dia — Dungeons & Deadlines{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl space-y-6">
+  <div>
+    <h1 class="page-title">Missões do Dia</h1>
+    <p class="page-subtitle">Tarefas com prazo para hoje.</p>
+  </div>
+
+  {% if tasks %}
+  <div class="task-list">
+    {% for task in tasks %}
+    {% with m=task.difficulty|monster %}
+    <div class="task-item">
+      <div>
+        <div class="task-item-title">{{ task.title }}</div>
+        <div class="task-item-meta">
+          <span class="{{ m.css_class }}">{{ m.monster }} ({{ task.difficulty }})</span> ·
+          {{ task.due_date|date:"H:i" }}
+        </div>
+      </div>
+      <div class="task-actions">
+        <div class="task-rewards" style="margin-right:0.5rem;">
+          <div class="text-xp">+{{ m.xp }} XP</div>
+          <div class="text-gold">+{{ m.gold }} ouro</div>
+        </div>
+        <form method="post" action="{% url 'task_complete' task.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'daily' %}">
+          <button type="submit" class="btn btn-primary btn-sm">Concluir</button>
+        </form>
+      </div>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass-card empty-state">
+    Nenhuma missão para hoje. <a href="{% url 'task_create' %}">Criar tarefa</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

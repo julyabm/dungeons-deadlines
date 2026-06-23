@@ -1,0 +1,98 @@
+{% extends "core/base_app.html" %}
+{% load game_tags %}
+
+{% block title %}Tarefas — Dungeons & Deadlines{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl space-y-6">
+  <div class="section-header">
+    <div>
+      <h1 class="page-title">Tarefas</h1>
+      <p class="page-subtitle">Derrote monstros e colete recompensas.</p>
+    </div>
+    <a href="{% url 'task_create' %}" class="btn btn-primary glow">+ Nova tarefa</a>
+  </div>
+
+  <div class="tab-section">
+    <h2 class="section-title">Pendentes</h2>
+    {% if pending_tasks %}
+    <div class="task-list">
+      {% for task in pending_tasks %}
+      {% with m=task.difficulty|monster %}
+      <div class="task-item">
+        <div>
+          <div class="task-item-title">{{ task.title }}</div>
+          <div class="task-item-meta">
+            <span class="{{ m.css_class }}">{{ m.monster }}</span> · {{ task.due_date|date:"d/m/Y H:i" }}
+          </div>
+        </div>
+        <div class="task-actions">
+          <form method="post" action="{% url 'task_complete' task.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{% url 'tasks' %}">
+            <button type="submit" class="btn btn-primary btn-sm">Concluir</button>
+          </form>
+          <a href="{% url 'task_edit' task.pk %}" class="btn btn-secondary btn-sm">Editar</a>
+          <a href="{% url 'task_delete' task.pk %}" class="btn btn-destructive btn-sm">Excluir</a>
+        </div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">Nenhuma tarefa pendente.</div>
+    {% endif %}
+  </div>
+
+  <div class="tab-section">
+    <h2 class="section-title text-destructive">Atrasadas</h2>
+    {% if overdue_tasks %}
+    <div class="task-list">
+      {% for task in overdue_tasks %}
+      {% with m=task.difficulty|monster %}
+      <div class="task-item" style="border-color:var(--destructive);">
+        <div>
+          <div class="task-item-title">{{ task.title }}</div>
+          <div class="task-item-meta">
+            <span class="{{ m.css_class }}">{{ m.monster }}</span> · Venceu {{ task.due_date|date:"d/m/Y H:i" }}
+            {% if task.overdue_processed %} · Dano aplicado{% endif %}
+          </div>
+        </div>
+        <div class="task-actions">
+          <form method="post" action="{% url 'task_complete' task.pk %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary btn-sm">Concluir</button>
+          </form>
+          <a href="{% url 'task_delete' task.pk %}" class="btn btn-destructive btn-sm">Excluir</a>
+        </div>
+      </div>
+      {% endwith %}
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">Nenhuma tarefa atrasada.</div>
+    {% endif %}
+  </div>
+
+  <div class="tab-section">
+    <h2 class="section-title text-easy">Concluídas</h2>
+    {% if completed_tasks %}
+    <div class="task-list">
+      {% for task in completed_tasks %}
+      <div class="task-item">
+        <div>
+          <div class="task-item-title">{{ task.title }}</div>
+          <div class="task-item-meta">
+            Concluída {{ task.completed_at|date:"d/m/Y H:i" }}
+          </div>
+        </div>
+        <a href="{% url 'task_delete' task.pk %}" class="btn btn-destructive btn-sm">Excluir</a>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">Nenhuma tarefa concluída ainda.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
