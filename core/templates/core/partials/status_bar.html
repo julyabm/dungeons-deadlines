@@ -1,12 +1,14 @@
 {% if avatar %}
 <div class="status-bar">
-  <div style="display:flex;align-items:center;gap:0.5rem;">
-    <div class="status-avatar">{{ user.full_name|first|upper|default:"H" }}</div>
-    <div class="hidden-sm">
-      <div style="font-size:0.875rem;font-weight:600;">{{ user.full_name|default:"Herói" }}</div>
-      <div class="text-muted" style="font-size:0.75rem;">⭐ Nível {{ avatar.level }}</div>
+  <a href="{% url 'profile' %}" class="status-user-link" title="Ver perfil">
+    <div style="display:flex;align-items:center;gap:0.5rem;">
+      <img src="{% url 'avatar_image' user.pk %}" alt="" class="status-avatar">
+      <div class="hidden-sm">
+        <div style="font-size:0.875rem;font-weight:600;">{{ user.full_name|default:"Herói" }}</div>
+        <div class="text-muted" style="font-size:0.75rem;">⭐ Nível {{ avatar.level }}</div>
+      </div>
     </div>
-  </div>
+  </a>
 
   <div class="status-bar-group">
     <div class="status-bar-label">❤️ <span>{{ avatar.hp }}/{{ avatar.max_hp }}</span></div>

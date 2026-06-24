@@ -1,0 +1,48 @@
+<dialog class="task-dialog friend-dialog" id="friend-modal-{{ player.pk }}">
+  <div class="task-dialog-content glass-card">
+    <div class="task-dialog-header">
+      <h2 class="task-dialog-title"><span class="text-primary">{{ player.full_name }}</span></h2>
+      <button type="button" class="btn btn-secondary btn-icon" onclick="this.closest('dialog').close()" aria-label="Fechar">✕</button>
+    </div>
+    <div class="friend-modal-body">
+      <div class="friend-modal-avatar">
+        <img src="{% url 'avatar_image' player.pk %}" alt="Avatar de {{ player.full_name }}">
+      </div>
+      <dl class="task-dialog-details">
+        <div>
+          <dt>Usuário</dt>
+          <dd><span class="text-primary">@{{ player.username }}</span></dd>
+        </div>
+        <div>
+          <dt>Nível</dt>
+          <dd><span class="text-primary">⭐ {{ player.avatar.level }}</span></dd>
+        </div>
+        <div>
+          <dt>HP</dt>
+          <dd>
+            <span class="text-hp">❤️ {{ player.avatar.hp }}/{{ player.avatar.max_hp }}</span>
+            <div class="progress" style="margin-top:0.375rem;">
+              <div class="progress-hp" style="width:{% widthratio player.avatar.hp player.avatar.max_hp 100 %}%;"></div>
+            </div>
+          </dd>
+        </div>
+        <div>
+          <dt>XP</dt>
+          <dd>
+            <span class="text-xp">⚡ {{ player.avatar.xp }}/{{ player.avatar.xp_to_next }}</span>
+            <div class="progress" style="margin-top:0.375rem;">
+              <div class="progress-xp" style="width:{% widthratio player.avatar.xp player.avatar.xp_to_next 100 %}%;"></div>
+            </div>
+          </dd>
+        </div>
+        <div>
+          <dt>XP total</dt>
+          <dd><span class="text-xp">{{ player.avatar.total_xp }} XP</span></dd>
+        </div>
+      </dl>
+    </div>
+    <div class="task-dialog-footer">
+      <button type="button" class="btn btn-secondary" onclick="this.closest('dialog').close()">Fechar</button>
+    </div>
+  </div>
+</dialog>

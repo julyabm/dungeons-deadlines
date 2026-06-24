@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-t9mcym$yx(l)!4q0m)tr6&kr%(owk2@g_g79n4*ayvvk!big7-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 ALLOWED_HOSTS = ['*']
-INSTALLED_APPS = [
+INSTALLED_APPS = [ 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'dungeons_deadlines',
         'USER': 'postgres',
-        'PASSWORD': 'pass',
+        'PASSWORD': 'julya',
         'HOST': 'localhost',
         'PORT': '5432',
     }

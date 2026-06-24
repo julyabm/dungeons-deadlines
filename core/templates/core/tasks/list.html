@@ -26,16 +26,9 @@
             <span class="{{ m.css_class }}">{{ m.monster }}</span> · {{ task.due_date|date:"d/m/Y H:i" }}
           </div>
         </div>
-        <div class="task-actions">
-          <form method="post" action="{% url 'task_complete' task.pk %}">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{% url 'tasks' %}">
-            <button type="submit" class="btn btn-primary btn-sm">Concluir</button>
-          </form>
-          <a href="{% url 'task_edit' task.pk %}" class="btn btn-secondary btn-sm">Editar</a>
-          <a href="{% url 'task_delete' task.pk %}" class="btn btn-destructive btn-sm">Excluir</a>
-        </div>
+        {% include "core/tasks/task_actions.html" with show_complete=True show_edit=True show_delete=True %}
       </div>
+      {% include "core/tasks/task_modal.html" %}
       {% endwith %}
       {% endfor %}
     </div>
@@ -58,14 +51,9 @@
             {% if task.overdue_processed %} · Dano aplicado{% endif %}
           </div>
         </div>
-        <div class="task-actions">
-          <form method="post" action="{% url 'task_complete' task.pk %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-primary btn-sm">Concluir</button>
-          </form>
-          <a href="{% url 'task_delete' task.pk %}" class="btn btn-destructive btn-sm">Excluir</a>
-        </div>
+        {% include "core/tasks/task_actions.html" with show_complete=True show_edit=False show_delete=True %}
       </div>
+      {% include "core/tasks/task_modal.html" %}
       {% endwith %}
       {% endfor %}
     </div>
@@ -86,8 +74,9 @@
             Concluída {{ task.completed_at|date:"d/m/Y H:i" }}
           </div>
         </div>
-        <a href="{% url 'task_delete' task.pk %}" class="btn btn-destructive btn-sm">Excluir</a>
+        {% include "core/tasks/task_actions.html" with show_complete=False show_edit=False show_delete=True %}
       </div>
+      {% include "core/tasks/task_modal.html" %}
       {% endfor %}
     </div>
     {% else %}

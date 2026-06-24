@@ -1,0 +1,20 @@
+<div class="task-actions">
+  <button type="button" class="btn btn-secondary btn-sm btn-icon" onclick="document.getElementById('task-modal-{{ task.pk }}').showModal()" title="Visualizar" aria-label="Visualizar tarefa">👁</button>
+  {% if show_complete %}
+  <form method="post" action="{% url 'task_complete' task.pk %}">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{% url 'tasks' %}">
+    <button type="submit" class="btn btn-primary btn-sm btn-icon" title="Concluir" aria-label="Concluir tarefa">✅</button>
+  </form>
+  {% endif %}
+  {% if show_edit %}
+    {% if task.can_edit %}
+    <a href="{% url 'task_edit' task.pk %}" class="btn btn-secondary btn-sm btn-icon" title="Editar" aria-label="Editar tarefa">✏️</a>
+    {% else %}
+    <button type="button" class="btn btn-secondary btn-sm btn-icon" disabled title="Edição bloqueada: menos de 24h para o prazo" aria-label="Edição bloqueada">🔒</button>
+    {% endif %}
+  {% endif %}
+  {% if show_delete %}
+  <a href="{% url 'task_delete' task.pk %}" class="btn btn-destructive btn-sm btn-icon" title="Excluir" aria-label="Excluir tarefa">🗑</a>
+  {% endif %}
+</div>

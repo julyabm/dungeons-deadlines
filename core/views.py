@@ -1,7 +1,10 @@
 from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Q
-from django.shortcuts import get_object_or_404, redirect
+from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
+from django.http.request import RAISE_ERROR, BadRequest
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views.generic import (
@@ -14,9 +17,10 @@ from django.views.generic import (
     View,
 )
 
-from core.forms import FriendRequestForm, RegisterForm, TaskForm
+from core.forms import AvatarAppearanceForm, FriendRequestForm, RegisterForm, TaskForm
 from core.mixins import GameContextMixin, SuccessMessageMixin
-from core.models import Friendship, Inventory, Item, Task
+from core.models import Friendship, Inventory, Item, Task, Usuario
+from core.services.avatar_renderer import render_avatar_png
 from core.services.game import (
     DIFFICULTIES,
     buy_item,
@@ -162,7 +166,10 @@ class ShopView(GameContextMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['items'] = Item.objects.all().order_by('price')
+        items = Item.objects.all().order_by('price')
+        context['consumable_items'] = items.filter(item_type='Consumível')
+        context['equipment_items'] = items.filter(item_type='Equipamento')
+        context['cosmetic_items'] = items.filter(item_type='Cosmético')
         owned = Inventory.objects.filter(
             avatar=self.request.user.avatar,
             quantity__gt=0,
@@ -182,9 +189,9 @@ class BuyItemView(GameContextMixin, View):
         return redirect('shop')
 
 
-class InventoryView(GameContextMixin, ListView):
+class ProfileView(GameContextMixin, ListView):
     model = Inventory
-    template_name = 'core/inventory.html'
+    template_name = 'core/profile.html'
     context_object_name = 'inventory_items'
 
     def get_queryset(self):
@@ -192,6 +199,64 @@ class InventoryView(GameContextMixin, ListView):
             avatar=self.request.user.avatar,
             quantity__gt=0,
         ).select_related('item')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        avatar = self.request.user.avatar
+        items = context['inventory_items']
+        context['appearance_form'] = AvatarAppearanceForm(instance=avatar)
+        context['cosmetic_items'] = [row for row in items if row.item.item_type == 'Cosmético']
+        context['game_items'] = [row for row in items if row.item.item_type != 'Cosmético']
+        context['equipped_cosmetics'] = {
+            row.item.cosmetic_slot: row
+            for row in items
+            if row.item.item_type == 'Cosmético' and row.is_equipped
+        }
+        return context
+
+
+class AvatarAppearanceView(GameContextMixin, View):
+    def post(self, request):
+        avatar = request.user.avatar
+        form = AvatarAppearanceForm(request.POST, instance=avatar)
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+
+        if form.is_valid():
+            form.save()
+            if is_ajax:
+                return JsonResponse({'ok': True})
+            messages.success(request, 'Aparência do avatar atualizada!')
+            return redirect('profile')
+
+        if is_ajax:
+            return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
+
+        for error in form.errors.values():
+            messages.error(request, error.as_text())
+        return redirect('profile')
+
+
+class AvatarImageView(LoginRequiredMixin, View):
+    def get(self, request, user_id):
+        target = get_object_or_404(Usuario, pk=user_id)
+        if not hasattr(target, 'avatar'):
+            raise Http404
+
+        viewer = request.user
+        if target != viewer and not _can_view_avatar(viewer, target):
+            raise Http404
+
+        png = render_avatar_png(target.avatar)
+        return HttpResponse(png, content_type='image/png')
+
+
+def _can_view_avatar(viewer, target):
+    if viewer == target:
+        return True
+    return Friendship.objects.filter(
+        Q(user_from=viewer, user_to=target) | Q(user_from=target, user_to=viewer),
+        status__in=['Aceito', 'Pendente'],
+    ).exists()
 
 
 class UseItemView(GameContextMixin, View):
@@ -207,7 +272,7 @@ class UseItemView(GameContextMixin, View):
             messages.success(request, f'{row.item.name} utilizado!')
         except ValueError as exc:
             messages.error(request, str(exc))
-        return redirect('inventory')
+        return redirect('profile')
 
 
 class ToggleEquipView(GameContextMixin, View):
@@ -219,12 +284,17 @@ class ToggleEquipView(GameContextMixin, View):
             quantity__gt=0,
         )
         try:
-            toggle_equip(row)
+            row = toggle_equip(row)
             state = 'equipado' if row.is_equipped else 'desequipado'
             messages.success(request, f'{row.item.name} {state}.')
         except ValueError as exc:
             messages.error(request, str(exc))
-        return redirect('inventory')
+        return redirect('profile')
+
+
+class InventoryView(ProfileView):
+    def get(self, request, *args, **kwargs):
+        return redirect('profile')
 
 
 class FriendsView(GameContextMixin, FormView):
@@ -297,3 +367,15 @@ class FriendshipRejectView(GameContextMixin, View):
         friendship.delete()
         messages.info(request, 'Pedido de amizade recusado.')
         return redirect('friends')
+
+
+def bad_request(request, exception=None):
+    return render(request, '400.html', status=400)
+
+
+def page_not_found(request, exception=None):
+    return render(request, '404.html', status=404)
+
+
+def server_error(request):
+    return render(request, '500.html', status=500)

@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.generic import RedirectView
 
 from core import views
 
@@ -15,9 +16,14 @@ urlpatterns = [
     path('missoes/', views.DailyTasksView.as_view(), name='daily'),
     path('loja/', views.ShopView.as_view(), name='shop'),
     path('loja/<int:pk>/comprar/', views.BuyItemView.as_view(), name='buy_item'),
-    path('inventario/', views.InventoryView.as_view(), name='inventory'),
-    path('inventario/<int:pk>/usar/', views.UseItemView.as_view(), name='use_item'),
-    path('inventario/<int:pk>/equipar/', views.ToggleEquipView.as_view(), name='toggle_equip'),
+    path('perfil/', views.ProfileView.as_view(), name='profile'),
+    path('perfil/aparencia/', views.AvatarAppearanceView.as_view(), name='avatar_appearance'),
+    path('perfil/<int:pk>/usar/', views.UseItemView.as_view(), name='use_item'),
+    path('perfil/<int:pk>/equipar/', views.ToggleEquipView.as_view(), name='toggle_equip'),
+    path('avatar/<int:user_id>/', views.AvatarImageView.as_view(), name='avatar_image'),
+    path('inventario/', RedirectView.as_view(pattern_name='profile', permanent=True), name='inventory'),
+    path('inventario/<int:pk>/usar/', RedirectView.as_view(pattern_name='profile', permanent=True)),
+    path('inventario/<int:pk>/equipar/', RedirectView.as_view(pattern_name='profile', permanent=True)),
     path('amigos/', views.FriendsView.as_view(), name='friends'),
     path('amigos/<int:pk>/aceitar/', views.FriendshipAcceptView.as_view(), name='friend_accept'),
     path('amigos/<int:pk>/recusar/', views.FriendshipRejectView.as_view(), name='friend_reject'),

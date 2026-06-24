@@ -11,7 +11,7 @@
       <a href="{% url 'tasks' %}" class="app-nav-link{% if 'task' in request.resolver_match.url_name %} active{% endif %}">⚔️ Tarefas</a>
       <a href="{% url 'daily' %}" class="app-nav-link{% if request.resolver_match.url_name == 'daily' %} active{% endif %}">📅 Missões do Dia</a>
       <a href="{% url 'shop' %}" class="app-nav-link{% if request.resolver_match.url_name == 'shop' %} active{% endif %}">🏪 Loja</a>
-      <a href="{% url 'inventory' %}" class="app-nav-link{% if request.resolver_match.url_name == 'inventory' %} active{% endif %}">🎒 Inventário</a>
+      <a href="{% url 'profile' %}" class="app-nav-link{% if request.resolver_match.url_name == 'profile' %} active{% endif %}">👤 Perfil</a>
       <a href="{% url 'friends' %}" class="app-nav-link{% if request.resolver_match.url_name == 'friends' %} active{% endif %}">👥 Amigos</a>
     </nav>
     <form method="post" action="{% url 'logout' %}" style="margin-top:auto;">
@@ -35,7 +35,7 @@
     <a href="{% url 'tasks' %}" class="mobile-nav-link{% if 'task' in request.resolver_match.url_name %} active{% endif %}">⚔️</a>
     <a href="{% url 'daily' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'daily' %} active{% endif %}">📅</a>
     <a href="{% url 'shop' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'shop' %} active{% endif %}">🏪</a>
-    <a href="{% url 'inventory' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'inventory' %} active{% endif %}">🎒</a>
+    <a href="{% url 'profile' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'profile' %} active{% endif %}">👤</a>
     <a href="{% url 'friends' %}" class="mobile-nav-link{% if request.resolver_match.url_name == 'friends' %} active{% endif %}">👥</a>
   </nav>
 </div>

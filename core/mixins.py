@@ -16,15 +16,17 @@ class ActiveUserMixin(LoginRequiredMixin):
 
 
 class GameContextMixin(ActiveUserMixin):
-    overdue_session_key = 'overdue_processed_session'
-
     def dispatch(self, request, *args, **kwargs):
-        response = super().dispatch(request, *args, **kwargs)
         if request.user.is_authenticated and hasattr(request.user, 'avatar'):
-            if not request.session.get(self.overdue_session_key):
-                process_overdue(request.user.avatar)
-                request.session[self.overdue_session_key] = True
-        return response
+            results = process_overdue(request.user.avatar)
+            for result in results:
+                task = result['task']
+                damage = result['damage']
+                messages.warning(
+                    request,
+                    f'A tarefa "{task.title}" venceu! Você perdeu {damage} HP.',
+                )
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

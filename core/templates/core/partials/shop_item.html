@@ -1,0 +1,21 @@
+<div class="glass-card shop-item">
+  <div class="shop-item-icon">{{ item.icon }}</div>
+  <div class="shop-item-name">{{ item.name }}</div>
+  <p class="shop-item-desc">{{ item.description }}</p>
+  <div class="shop-item-footer">
+    <span class="text-gold" style="font-weight:600;">🪙 {{ item.price }}</span>
+    {% if item.id in owned_item_ids and item.item_type != 'Consumível' %}
+    <span class="text-muted" style="font-size:0.875rem;">Já possui</span>
+    {% else %}
+    <div>
+      <form method="post" action="{% url 'buy_item' item.pk %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary btn-sm{% if avatar.gold < item.price %} btn-disabled{% endif %}" {% if avatar.gold < item.price %}disabled{% endif %}>Comprar</button>
+      </form>
+      {% if avatar.gold < item.price %}
+      <div class="shop-item-unavailable">Ouro insuficiente</div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>

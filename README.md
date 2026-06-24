@@ -26,7 +26,7 @@ python -m venv .venv
 **Linux/Mac:**
 ```bash
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/Scripts/activate
 ```
 
 ### 3. Dependências
@@ -54,7 +54,7 @@ python manage.py createsuperuser
 ### 6. Servidor
 
 ```bash
-python manage.py runserver
+python manage.py runserver --insecure
 ```
 
 Acesse: `http://127.0.0.1:8000/`

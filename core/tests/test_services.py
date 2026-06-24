@@ -44,7 +44,7 @@ class GameServiceTests(TestCase):
 
     def test_task_rewards(self):
         xp, gold = task_rewards('Fácil')
-        self.assertEqual((xp, gold), (10, 5))
+        self.assertEqual((xp, gold), (100, 5))
 
     def test_complete_task_awards_xp_and_gold(self):
         task = Task.objects.create(
@@ -55,9 +55,9 @@ class GameServiceTests(TestCase):
         )
         complete_task(task)
         self.avatar.refresh_from_db()
-        self.assertEqual(self.avatar.xp, 10)
+        self.assertEqual(self.avatar.xp, 100)
         self.assertEqual(self.avatar.gold, 505)
-        self.assertEqual(self.avatar.total_xp, 10)
+        self.assertEqual(self.avatar.total_xp, 100)
         task.refresh_from_db()
         self.assertTrue(task.is_completed)
 
@@ -68,11 +68,13 @@ class GameServiceTests(TestCase):
             due_date=timezone.now() - timedelta(hours=1),
             difficulty='Fácil',
         )
-        process_overdue(self.avatar)
+        results = process_overdue(self.avatar)
         self.avatar.refresh_from_db()
         task.refresh_from_db()
-        self.assertEqual(self.avatar.hp, 95)
+        self.assertEqual(self.avatar.hp, 50)
         self.assertTrue(task.overdue_processed)
+        self.assertEqual(len(results), 1)
+        self.assertEqual(results[0]['damage'], 50)
 
     def test_buy_item(self):
         buy_item(self.avatar, self.coffee)
@@ -97,3 +99,35 @@ class GameServiceTests(TestCase):
         toggle_equip(row)
         row.refresh_from_db()
         self.assertTrue(row.is_equipped)
+
+    def test_cosmetic_equip_replaces_same_slot(self):
+        hat_a = Item.objects.create(
+            slug='hat_a',
+            name='Hat A',
+            price=50,
+            item_type='Cosmético',
+            cosmetic_slot='head',
+            layer_file='wizard_hat.png',
+            description='Hat',
+            icon='🎩',
+        )
+        hat_b = Item.objects.create(
+            slug='hat_b',
+            name='Hat B',
+            price=60,
+            item_type='Cosmético',
+            cosmetic_slot='head',
+            layer_file='crown.png',
+            description='Crown',
+            icon='👑',
+        )
+        buy_item(self.avatar, hat_a)
+        buy_item(self.avatar, hat_b)
+        row_a = Inventory.objects.get(avatar=self.avatar, item=hat_a)
+        row_b = Inventory.objects.get(avatar=self.avatar, item=hat_b)
+        toggle_equip(row_a)
+        toggle_equip(row_b)
+        row_a.refresh_from_db()
+        row_b.refresh_from_db()
+        self.assertFalse(row_a.is_equipped)
+        self.assertTrue(row_b.is_equipped)

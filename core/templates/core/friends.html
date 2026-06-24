@@ -30,9 +30,12 @@
     <div class="task-list">
       {% for f in pending_received %}
       <div class="task-item">
-        <div>
-          <div class="task-item-title">{{ f.user_from.full_name }}</div>
-          <div class="task-item-meta">@{{ f.user_from.username }}</div>
+        <div class="friend-row">
+          <img src="{% url 'avatar_image' f.user_from.pk %}" alt="" class="friend-avatar">
+          <div>
+            <div class="task-item-title">{{ f.user_from.full_name }}</div>
+            <div class="task-item-meta">@{{ f.user_from.username }}</div>
+          </div>
         </div>
         <div class="task-actions">
           <form method="post" action="{% url 'friend_accept' f.pk %}">
@@ -56,9 +59,12 @@
     <div class="task-list">
       {% for f in pending_sent %}
       <div class="task-item">
-        <div>
-          <div class="task-item-title">{{ f.user_to.full_name }}</div>
-          <div class="task-item-meta">@{{ f.user_to.username }} · Pendente</div>
+        <div class="friend-row">
+          <img src="{% url 'avatar_image' f.user_to.pk %}" alt="" class="friend-avatar">
+          <div>
+            <div class="task-item-title">{{ f.user_to.full_name }}</div>
+            <div class="task-item-meta">@{{ f.user_to.username }} · Pendente</div>
+          </div>
         </div>
       </div>
       {% endfor %}
@@ -71,16 +77,18 @@
     {% if ranking %}
     <div class="ranking-list">
       {% for player in ranking %}
-      <div class="ranking-item{% if player == user %} self{% endif %}">
-        <div style="display:flex;align-items:center;gap:0.75rem;">
+      <button type="button" class="ranking-item ranking-item-clickable{% if player == user %} self{% endif %}" onclick="document.getElementById('friend-modal-{{ player.pk }}').showModal()">
+        <div class="friend-row">
           <span class="ranking-pos">#{{ forloop.counter }}</span>
-          <div>
+          <img src="{% url 'avatar_image' player.pk %}" alt="" class="friend-avatar">
+          <div style="text-align:left;">
             <div class="task-item-title">{{ player.full_name }}{% if player == user %} (você){% endif %}</div>
             <div class="task-item-meta">@{{ player.username }} · Nível {{ player.avatar.level }}</div>
           </div>
         </div>
         <span class="text-xp">{{ player.avatar.total_xp }} XP</span>
-      </div>
+      </button>
+      {% include "core/partials/friend_modal.html" %}
       {% endfor %}
     </div>
     {% else %}

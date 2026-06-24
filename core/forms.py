@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
 
-from core.models import Friendship, Task, Usuario
+from core.models import Avatar, Friendship, Task, Usuario
 
 
 class UsuarioCreationForm(UserCreationForm):
@@ -88,7 +88,7 @@ class TaskForm(forms.ModelForm):
             raise forms.ValidationError('A data de entrega deve ser no futuro.')
 
         if self.is_edit and self.instance.pk:
-            if self.instance.due_date - now < timezone.timedelta(hours=24):
+            if not self.instance.can_edit:
                 raise forms.ValidationError('Não é possível editar tarefas a menos de 24h do prazo.')
 
         return due_date
@@ -143,3 +143,14 @@ class FriendRequestForm(forms.Form):
             user_to=self.friend,
             status='Pendente',
         )
+
+
+class AvatarAppearanceForm(forms.ModelForm):
+    class Meta:
+        model = Avatar
+        fields = ('skin_tone', 'hair_style', 'hair_color')
+        widgets = {
+            'skin_tone': forms.Select(attrs={'class': 'form-input'}),
+            'hair_style': forms.Select(attrs={'class': 'form-input'}),
+            'hair_color': forms.Select(attrs={'class': 'form-input'}),
+        }

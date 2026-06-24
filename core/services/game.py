@@ -7,9 +7,9 @@ from django.utils import timezone
 from core.models import ActiveEffect, Avatar, Inventory, Item, Task
 
 DIFFICULTIES = {
-    'Fácil': {'monster': 'Slime', 'xp': 10, 'gold': 5, 'css_class': 'text-easy'},
-    'Médio': {'monster': 'Ogro', 'xp': 30, 'gold': 15, 'css_class': 'text-medium'},
-    'Difícil': {'monster': 'Dragão', 'xp': 100, 'gold': 50, 'css_class': 'text-hard'},
+    'Fácil': {'monster': 'Slime', 'xp': 100, 'gold': 5, 'css_class': 'text-easy'},
+    'Médio': {'monster': 'Ogro', 'xp': 200, 'gold': 15, 'css_class': 'text-medium'},
+    'Difícil': {'monster': 'Dragão', 'xp': 500, 'gold': 50, 'css_class': 'text-hard'},
 }
 
 SHOP_ITEMS = [
@@ -48,6 +48,39 @@ SHOP_ITEMS = [
         'item_type': 'Equipamento',
         'bonus_value': Decimal('10.00'),
         'icon': '⚔️',
+    },
+    {
+        'slug': 'wizard_hat',
+        'name': 'Chapéu de Mago',
+        'description': 'Cosmético para a cabeça do seu avatar.',
+        'price': 80,
+        'item_type': 'Cosmético',
+        'bonus_value': Decimal('0.00'),
+        'icon': '🎩',
+        'cosmetic_slot': 'head',
+        'layer_file': 'wizard_hat.png',
+    },
+    {
+        'slug': 'knight_armor',
+        'name': 'Armadura de Cavaleiro',
+        'description': 'Cosmético para o corpo do seu avatar.',
+        'price': 120,
+        'item_type': 'Cosmético',
+        'bonus_value': Decimal('0.00'),
+        'icon': '🛡️',
+        'cosmetic_slot': 'body',
+        'layer_file': 'knight_armor.png',
+    },
+    {
+        'slug': 'crown',
+        'name': 'Coroa Real',
+        'description': 'Cosmético exclusivo para a cabeça do avatar.',
+        'price': 200,
+        'item_type': 'Cosmético',
+        'bonus_value': Decimal('0.00'),
+        'icon': '👑',
+        'cosmetic_slot': 'head',
+        'layer_file': 'crown.png',
     },
 ]
 
@@ -125,6 +158,7 @@ def process_overdue(avatar):
         overdue_processed=False,
     )
 
+    results = []
     for task in overdue_tasks:
         base_xp, _ = task_rewards(task.difficulty)
         damage = base_xp // 2
@@ -142,9 +176,10 @@ def process_overdue(avatar):
 
         task.overdue_processed = True
         task.save(update_fields=['overdue_processed'])
+        results.append({'task': task, 'damage': damage})
 
     avatar.save()
-    return avatar
+    return results
 
 
 @transaction.atomic
@@ -161,6 +196,9 @@ def buy_item(avatar, item):
     )
 
     if item.item_type == 'Equipamento' and inventory.quantity > 0:
+        raise ValueError('Item já possuído')
+
+    if item.item_type == 'Cosmético' and inventory.quantity > 0:
         raise ValueError('Item já possuído')
 
     avatar.gold -= item.price
@@ -206,8 +244,17 @@ def toggle_equip(inventory_row):
     if inventory_row.quantity <= 0:
         raise ValueError('Item não disponível no inventário')
 
-    if inventory_row.item.item_type != 'Equipamento':
+    item = inventory_row.item
+    if item.item_type not in ('Equipamento', 'Cosmético'):
         raise ValueError('Item não equipável')
+
+    if item.item_type == 'Cosmético' and not inventory_row.is_equipped:
+        Inventory.objects.filter(
+            avatar=inventory_row.avatar,
+            item__item_type='Cosmético',
+            item__cosmetic_slot=item.cosmetic_slot,
+            is_equipped=True,
+        ).exclude(pk=inventory_row.pk).update(is_equipped=False)
 
     inventory_row.is_equipped = not inventory_row.is_equipped
     inventory_row.save(update_fields=['is_equipped'])

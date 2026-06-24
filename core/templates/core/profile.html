@@ -1,0 +1,132 @@
+{% extends "core/base_app.html" %}
+
+{% block title %}Perfil — Dungeons & Deadlines{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl space-y-6">
+  <div>
+    <h1 class="page-title">Perfil</h1>
+    <p class="page-subtitle">Personalize seu herói e gerencie seu inventário.</p>
+  </div>
+
+  <div class="profile-layout">
+    <div class="glass-card profile-avatar-card">
+      <h2 class="section-title">Seu avatar</h2>
+      <div class="profile-avatar-preview">
+        <img src="{% url 'avatar_image' user.pk %}" alt="Avatar de {{ user.full_name }}" class="profile-avatar-image" id="profile-avatar-preview">
+      </div>
+      <form method="post" action="{% url 'avatar_appearance' %}" class="profile-appearance-form" id="appearance-form">
+        {% csrf_token %}
+        {% for field in appearance_form %}
+        <div class="form-group">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+        </div>
+        {% endfor %}
+      </form>
+    </div>
+
+    <div class="profile-side">
+      {% if cosmetic_items %}
+      <div class="tab-section">
+        <h2 class="section-title">Cosméticos</h2>
+        <div class="shop-grid">
+          {% for row in cosmetic_items %}
+          <div class="glass-card shop-item">
+            <div class="shop-item-icon">{{ row.item.icon }}</div>
+            <div class="shop-item-name">{{ row.item.name }}</div>
+            <div class="text-muted" style="font-size:0.75rem;">Slot: {{ row.item.get_cosmetic_slot_display }}</div>
+            <p class="shop-item-desc">{{ row.item.description }}</p>
+            <div class="shop-item-footer">
+              {% if row.is_equipped %}
+              <span class="text-primary" style="font-size:0.875rem;">Equipado</span>
+              {% endif %}
+              <form method="post" action="{% url 'toggle_equip' row.pk %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary btn-sm">
+                  {% if row.is_equipped %}Desequipar{% else %}Equipar{% endif %}
+                </button>
+              </form>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div class="tab-section">
+        <h2 class="section-title">Inventário</h2>
+        {% if game_items %}
+        <div class="shop-grid">
+          {% for row in game_items %}
+          <div class="glass-card shop-item">
+            <div class="shop-item-icon">{{ row.item.icon }}</div>
+            <div class="shop-item-name">{{ row.item.name }}</div>
+            <div class="text-muted" style="font-size:0.75rem;">{{ row.item.item_type }} · x{{ row.quantity }}</div>
+            <p class="shop-item-desc">{{ row.item.description }}</p>
+            <div class="shop-item-footer">
+              {% if row.is_equipped %}
+              <span class="text-primary" style="font-size:0.875rem;">Equipado</span>
+              {% endif %}
+              <div class="task-actions">
+                {% if row.item.item_type == 'Consumível' %}
+                <form method="post" action="{% url 'use_item' row.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-primary btn-sm">Usar</button>
+                </form>
+                {% elif row.item.item_type == 'Equipamento' %}
+                <form method="post" action="{% url 'toggle_equip' row.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-secondary btn-sm">
+                    {% if row.is_equipped %}Desequipar{% else %}Equipar{% endif %}
+                  </button>
+                </form>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="glass-card empty-state">
+          Inventário vazio. Visite a <a href="{% url 'shop' %}">loja</a>.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const form = document.getElementById('appearance-form');
+  const preview = document.getElementById('profile-avatar-preview');
+  if (!form || !preview) return;
+
+  let saving = false;
+
+  form.querySelectorAll('select').forEach(function (select) {
+    select.addEventListener('change', function () {
+      if (saving) return;
+      saving = true;
+
+      fetch(form.action, {
+        method: 'POST',
+        body: new FormData(form),
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      })
+        .then(function (response) {
+          if (!response.ok) throw new Error('save failed');
+          preview.src = preview.src.split('?')[0] + '?t=' + Date.now();
+        })
+        .catch(function () {
+          alert('Não foi possível salvar a aparência. Tente novamente.');
+        })
+        .finally(function () {
+          saving = false;
+        });
+    });
+  });
+})();
+</script>
+{% endblock %}

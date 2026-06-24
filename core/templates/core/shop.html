@@ -9,28 +9,41 @@
     <p class="page-subtitle">Gaste seu ouro em itens úteis. Saldo: <span class="text-gold">{{ avatar.gold }} 🪙</span></p>
   </div>
 
-  <div class="shop-grid">
-    {% for item in items %}
-    <div class="glass-card shop-item">
-      <div class="shop-item-icon">{{ item.icon }}</div>
-      <div class="shop-item-name">{{ item.name }}</div>
-      <div class="text-muted" style="font-size:0.75rem;">{{ item.item_type }}</div>
-      <p class="shop-item-desc">{{ item.description }}</p>
-      <div class="shop-item-footer">
-        <span class="text-gold" style="font-weight:600;">🪙 {{ item.price }}</span>
-        {% if item.id in owned_item_ids and item.item_type == 'Equipamento' %}
-        <span class="text-muted" style="font-size:0.875rem;">Já possui</span>
-        {% else %}
-        <form method="post" action="{% url 'buy_item' item.pk %}">
-          {% csrf_token %}
-          <button type="submit" class="btn btn-primary btn-sm" {% if avatar.gold < item.price %}disabled{% endif %}>Comprar</button>
-        </form>
-        {% endif %}
-      </div>
+  {% if consumable_items %}
+  <div class="tab-section">
+    <h2 class="section-title">🧪 Consumíveis</h2>
+    <div class="shop-grid">
+      {% for item in consumable_items %}
+      {% include "core/partials/shop_item.html" %}
+      {% endfor %}
     </div>
-    {% empty %}
-    <div class="empty-state">Loja vazia. Execute <code>python manage.py seed_items</code>.</div>
-    {% endfor %}
   </div>
+  {% endif %}
+
+  {% if equipment_items %}
+  <div class="tab-section">
+    <h2 class="section-title">⚔️ Equipamentos</h2>
+    <div class="shop-grid">
+      {% for item in equipment_items %}
+      {% include "core/partials/shop_item.html" %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if cosmetic_items %}
+  <div class="tab-section">
+    <h2 class="section-title">✨ Cosméticos</h2>
+    <div class="shop-grid">
+      {% for item in cosmetic_items %}
+      {% include "core/partials/shop_item.html" %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if not consumable_items and not equipment_items and not cosmetic_items %}
+  <div class="empty-state">Loja vazia. Execute <code>python manage.py seed_items</code>.</div>
+  {% endif %}
 </div>
 {% endblock %}

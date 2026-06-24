@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.utils import timezone
 from datetime import timedelta
 
-from core.models import Avatar, Usuario
+from core.models import Avatar, Task, Usuario
 
 
 class AvatarSignalTests(TestCase):
@@ -29,3 +29,31 @@ class AvatarPropertyTests(TestCase):
             password='pass1234',
         )
         self.assertEqual(user.avatar.xp_to_next, 1000)
+
+
+class TaskPropertyTests(TestCase):
+    def setUp(self):
+        self.user = Usuario.objects.create_user(
+            email='task@test.com',
+            username='taskuser',
+            full_name='Task User',
+            password='pass1234',
+        )
+
+    def test_can_edit_when_more_than_24h(self):
+        task = Task.objects.create(
+            user=self.user,
+            title='Future',
+            due_date=timezone.now() + timedelta(hours=25),
+            difficulty='Fácil',
+        )
+        self.assertTrue(task.can_edit)
+
+    def test_cannot_edit_within_24h(self):
+        task = Task.objects.create(
+            user=self.user,
+            title='Soon',
+            due_date=timezone.now() + timedelta(hours=23),
+            difficulty='Fácil',
+        )
+        self.assertFalse(task.can_edit)

@@ -1,0 +1,46 @@
+{% load game_tags %}
+<dialog class="task-dialog" id="task-modal-{{ task.pk }}">
+  <div class="task-dialog-content glass-card">
+    <div class="task-dialog-header">
+      <h2 class="task-dialog-title"><span class="text-primary">{{ task.title }}</span></h2>
+      <button type="button" class="btn btn-secondary btn-icon" onclick="this.closest('dialog').close()" aria-label="Fechar">✕</button>
+    </div>
+    {% with m=task.difficulty|monster %}
+    <dl class="task-dialog-details">
+      <div>
+        <dt>Descrição</dt>
+        <dd><span class="text-primary">{% if task.description %}{{ task.description }}{% else %}</span><span class="text-muted">Sem descrição</span>{% endif %}</dd>
+      </div>
+      <div>
+        <dt>Dificuldade</dt>
+        <dd><span class="{{ m.css_class }}">{{ task.difficulty }}</span><span class="text-primary"> — {{ m.monster }}</span></dd>
+      </div>
+      <div>
+        <dt>Prazo</dt>
+        <dd><span class="text-primary">{{ task.due_date|date:"d/m/Y H:i" }}</span></dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>
+          <span class="text-primary">
+          {% if task.is_completed %}
+            Concluída em {{ task.completed_at|date:"d/m/Y H:i" }}
+          {% elif task.is_overdue %}
+            Atrasada{% if task.overdue_processed %} · Dano aplicado{% endif %}
+          {% else %}
+            Pendente
+          {% endif %}
+        </span>
+        </dd>
+      </div>
+      <div>
+        <dt>Criada em</dt>
+        <dd><span class="text-primary">{{ task.created_at|date:"d/m/Y H:i" }}</span></dd>
+      </div>
+    </dl>
+    {% endwith %}
+    <div class="task-dialog-footer">
+      <button type="button" class="btn btn-secondary" onclick="this.closest('dialog').close()">Fechar</button>
+    </div>
+  </div>
+</dialog>

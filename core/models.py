@@ -50,6 +50,23 @@ class Usuario(AbstractUser):
 
 
 class Avatar(models.Model):
+    SKIN_TONE_CHOICES = [
+        ('light', 'Claro'),
+        ('medium', 'Médio'),
+        ('dark', 'Escuro'),
+    ]
+    HAIR_STYLE_CHOICES = [
+        ('short', 'Curto'),
+        ('long', 'Longo'),
+        ('spiky', 'Espetado'),
+    ]
+    HAIR_COLOR_CHOICES = [
+        ('black', 'Preto'),
+        ('brown', 'Castanho'),
+        ('blonde', 'Loiro'),
+        ('red', 'Ruivo'),
+    ]
+
     user = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='avatar')
     hp = models.IntegerField(default=100, validators=[MinValueValidator(0)], verbose_name='Pontos de Vida')
     max_hp = models.IntegerField(default=100, validators=[MinValueValidator(1)], verbose_name='HP Máximo')
@@ -57,6 +74,9 @@ class Avatar(models.Model):
     xp = models.IntegerField(default=0, verbose_name='Experiência')
     total_xp = models.IntegerField(default=0, verbose_name='XP Total')
     gold = models.IntegerField(default=0, verbose_name='Ouro')
+    skin_tone = models.CharField(max_length=10, choices=SKIN_TONE_CHOICES, default='medium', verbose_name='Tom de pele')
+    hair_style = models.CharField(max_length=10, choices=HAIR_STYLE_CHOICES, default='short', verbose_name='Estilo de cabelo')
+    hair_color = models.CharField(max_length=10, choices=HAIR_COLOR_CHOICES, default='brown', verbose_name='Cor do cabelo')
 
     def __str__(self):
         return f'Avatar de {self.user.username} - Lvl {self.level}'
@@ -94,11 +114,23 @@ class Task(models.Model):
         from django.utils import timezone
         return not self.is_completed and self.due_date < timezone.now()
 
+    @property
+    def can_edit(self):
+        from django.utils import timezone
+        if self.is_completed:
+            return False
+        return self.due_date - timezone.now() > timezone.timedelta(hours=24)
+
 
 class Item(models.Model):
     TYPE_CHOICES = [
         ('Consumível', 'Consumível'),
         ('Equipamento', 'Equipamento'),
+        ('Cosmético', 'Cosmético'),
+    ]
+    COSMETIC_SLOT_CHOICES = [
+        ('head', 'Cabeça'),
+        ('body', 'Corpo'),
     ]
 
     slug = models.SlugField(max_length=50, unique=True, verbose_name='Identificador')
@@ -108,6 +140,14 @@ class Item(models.Model):
     description = models.TextField(verbose_name='Descrição do Item')
     bonus_value = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, verbose_name='Bônus')
     icon = models.CharField(max_length=10, default='📦', verbose_name='Ícone')
+    cosmetic_slot = models.CharField(
+        max_length=10,
+        choices=COSMETIC_SLOT_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='Slot cosmético',
+    )
+    layer_file = models.CharField(max_length=100, blank=True, default='', verbose_name='Arquivo de camada')
 
     def __str__(self):
         return self.name

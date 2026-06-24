@@ -12,16 +12,19 @@ class Command(BaseCommand):
         updated_count = 0
 
         for item_data in SHOP_ITEMS:
+            defaults = {
+                'name': item_data['name'],
+                'description': item_data['description'],
+                'price': item_data['price'],
+                'item_type': item_data['item_type'],
+                'bonus_value': item_data['bonus_value'],
+                'icon': item_data['icon'],
+                'cosmetic_slot': item_data.get('cosmetic_slot'),
+                'layer_file': item_data.get('layer_file', ''),
+            }
             _, created = Item.objects.update_or_create(
                 slug=item_data['slug'],
-                defaults={
-                    'name': item_data['name'],
-                    'description': item_data['description'],
-                    'price': item_data['price'],
-                    'item_type': item_data['item_type'],
-                    'bonus_value': item_data['bonus_value'],
-                    'icon': item_data['icon'],
-                },
+                defaults=defaults,
             )
             if created:
                 created_count += 1

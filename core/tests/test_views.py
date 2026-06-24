@@ -59,3 +59,24 @@ class ViewTests(TestCase):
         })
         self.assertEqual(response.status_code, 302)
         self.assertEqual(self.user.tasks.count(), 1)
+
+    def test_inventory_redirects_to_profile(self):
+        self.client.login(username='view@test.com', password='pass1234')
+        response = self.client.get(reverse('inventory'))
+        self.assertRedirects(response, reverse('profile'), status_code=301)
+
+    def test_profile_page(self):
+        self.client.login(username='view@test.com', password='pass1234')
+        response = self.client.get(reverse('profile'))
+        self.assertEqual(response.status_code, 200)
+
+    def test_avatar_image_for_self(self):
+        self.client.login(username='view@test.com', password='pass1234')
+        response = self.client.get(reverse('avatar_image', args=[self.user.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'image/png')
+
+    def test_page_not_found(self):
+        response = self.client.get('/url-inexistente/')
+        self.assertEqual(response.status_code, 404)
+        self.assertContains(response, 'Calabouço não encontrado', status_code=404)

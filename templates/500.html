@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Erro interno — Dungeons & Deadlines{% endblock %}
+
+{% block body %}
+<div class="container" style="min-height:100vh;display:grid;place-items:center;padding:2rem;">
+  <div class="glass-card auth-card text-center">
+    <div style="font-size:3rem;margin-bottom:1rem;">💀</div>
+    <h1 class="page-title" style="font-size:1.5rem;">Algo deu errado</h1>
+    <p class="page-subtitle">Nossos goblins estão trabalhando para consertar isso. Tente novamente em instantes.</p>
+    <div class="hero-actions" style="margin-top:1.5rem;">
+      <a href="{% url 'dashboard' %}" class="btn btn-primary">Ir ao dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
