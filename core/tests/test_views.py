@@ -70,12 +70,6 @@ class ViewTests(TestCase):
         response = self.client.get(reverse('profile'))
         self.assertEqual(response.status_code, 200)
 
-    def test_avatar_image_for_self(self):
-        self.client.login(username='view@test.com', password='pass1234')
-        response = self.client.get(reverse('avatar_image', args=[self.user.pk]))
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response['Content-Type'], 'image/png')
-
     def test_page_not_found(self):
         response = self.client.get('/url-inexistente/')
         self.assertEqual(response.status_code, 404)

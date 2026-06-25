@@ -2,6 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm
 from django.utils import timezone
 
+from core.helpers import BeardOptions, ClothesOptions, ColorOptions, EyeOptions, GlassesOptions, HairOptions, HatOptions, MouthOptions
 from core.models import Avatar, Friendship, Task, Usuario
 
 
@@ -145,12 +146,121 @@ class FriendRequestForm(forms.Form):
         )
 
 
-class AvatarAppearanceForm(forms.ModelForm):
-    class Meta:
-        model = Avatar
-        fields = ('skin_tone', 'hair_style', 'hair_color')
-        widgets = {
-            'skin_tone': forms.Select(attrs={'class': 'form-input'}),
-            'hair_style': forms.Select(attrs={'class': 'form-input'}),
-            'hair_color': forms.Select(attrs={'class': 'form-input'}),
+class AvatarAppearanceForm(forms.Form):
+    CLOTHES_CHOICES = [(choice.value, f"Roupa {index+1}") for index, choice in enumerate(ClothesOptions)]
+    EYE_CHOICES = [(choice.value, f"Olho {index+1}") for index, choice in enumerate(EyeOptions)]
+    HAIR_CHOICES = [(choice.value, f"Cabelo {index+1}") for index, choice in enumerate(HairOptions)]
+    MOUTH_CHOICES = [(choice.value, f"Boca {index+1}") for index, choice in enumerate(MouthOptions)]
+    GLASSES_CHOICES = [(None, "Sem Óculos")] + [
+        (choice.value, f"Óculos {index+1}")  
+        for index, choice in enumerate(GlassesOptions)
+    ]
+    HAT_CHOICES = [(None, "Sem Boné")] + [
+        (choice.value, f"Boné {index+1}")
+        for index, choice in enumerate(HatOptions)
+    ]
+    BEARD_CHOICES = [(None, "Sem Barba")] + [
+        (choice.value, f"Barba {index+1}")
+        for index, choice in enumerate(BeardOptions)
+    ]
+
+    COLOR_CHOICES = [
+        (ColorOptions.YELLOW.value, "Amarelo Claro"),
+        (ColorOptions.LIGHT_GRAY.value, "Cinza Claro"),
+        (ColorOptions.GRAY.value, "Cinza Médio"),
+        (ColorOptions.DARK_GRAY.value, "Cinza Escuro"),
+        (ColorOptions.BLACK.value, "Preto"),
+        (ColorOptions.OLIVE.value, "Cinza Oliva"),
+        (ColorOptions.LIGHT_BLUE.value, "Azul Claro"),
+        (ColorOptions.BLUE.value, "Azul"),
+        (ColorOptions.DARK_BLUE.value, "Azul Escuro"),
+        (ColorOptions.BLUE_GRAY.value, "Azul Acinzentado"),
+        (ColorOptions.BLUE_GRAY_OPAQUE.value, "Azul Escuro Opaco"),
+        (ColorOptions.TURQUOISE.value, "Azul Turquesa"),
+        (ColorOptions.ROYAL_BLUE.value, "Azul Royal"),
+        (ColorOptions.PETROLEUM_BLUE.value, "Azul Petróleo"),
+        (ColorOptions.LIGHT_GREEN.value, "Verde Claro"),
+        (ColorOptions.GREEN.value, "Verde"),
+        (ColorOptions.DARK_GREEN.value, "Verde Escuro"),
+        (ColorOptions.DARK_GREEN_BLUE.value, "Verde Azulado Escuro"),
+        (ColorOptions.MUSHROOM_GREEN.value, "Verde Musgo"),
+        (ColorOptions.LIME_GREEN.value, "Verde Lima"),
+        (ColorOptions.GREEN_FLAG.value, "Verde Bandeira"),
+        (ColorOptions.LIGHT_RED.value, "Vermelho Claro"),
+        (ColorOptions.RED.value, "Vermelho"),
+        (ColorOptions.DARK_RED.value, "Vermelho Escuro"),
+        (ColorOptions.DARK_PINK.value, "Rosa Escuro"),
+        (ColorOptions.VIVID_RED.value, "Vermelho Vivo"),
+        (ColorOptions.PINK.value, "Rosa"),
+        (ColorOptions.BRICK_RED.value, "Vermelho Tijolo"),
+        (ColorOptions.LIGHT_PINK_OPAQUE.value, "Rosa Claro Opaco"),
+        (ColorOptions.PINK_OPAQUE.value, "Rosa Opaco"),
+        (ColorOptions.PINK_VIVID.value, "Rosa Vivo"),
+        (ColorOptions.LIGHT_YELLOW.value, "Amarelo Creme"),
+        (ColorOptions.YELLOW_DARK.value, "Amarelo"),
+        (ColorOptions.BEIGE_DARK.value, "Bege Escuro"),
+        (ColorOptions.LIGHT_BEIGE.value, "Bege Claro"),
+        (ColorOptions.BROWN_GRAY.value, "Marrom Acinzentado"),
+        (ColorOptions.BROWN_DARK.value, "Marrom Escuro"),
+        (ColorOptions.BROWN.value, "Marrom"),
+        (ColorOptions.BROWN_RED.value, "Marrom Avermelhado"),
+        (ColorOptions.BROWN_DARK_BLACK.value, "Marrom Escuro Quase Preto"),
+        (ColorOptions.BROWN_SEPIA.value, "Marrom Sépia"),
+        (ColorOptions.BROWN_LIGHT.value, "Marrom Claro"),
+        (ColorOptions.BROWN_GOLD.value, "Marrom Dourado"),
+        (ColorOptions.BROWN_MEDIUM.value, "Marrom Médio"),
+        (ColorOptions.BROWN_TERRACOTA.value, "Marrom Terracota"),
+        (ColorOptions.PURPLE.value, "Roxo")
+    ]
+
+    clothesVariant = forms.ChoiceField(label="Roupa", choices=CLOTHES_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    eyesVariant = forms.ChoiceField(label="Olhos", choices=EYE_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    glassesVariant = forms.ChoiceField(label="Óculos", choices=GLASSES_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    hairVariant = forms.ChoiceField(label="Cabelo", choices=HAIR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    hatVariant = forms.ChoiceField(label="Chapéu", choices=HAT_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    mouthVariant = forms.ChoiceField(label="Boca", choices=MOUTH_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    beardVariant = forms.ChoiceField(label="Barba", choices=BEARD_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    
+    hairColor = forms.ChoiceField(label="Cor do Cabelo", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    clothingColor = forms.ChoiceField(label="Cor da Roupa", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    eyesColor = forms.ChoiceField(label="Cor dos Olhos", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    glassesColor = forms.ChoiceField(label="Cor dos Óculos", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    hatColor = forms.ChoiceField(label="Cor do Chapéu", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    mouthColor = forms.ChoiceField(label="Cor da Boca", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    skinColor = forms.ChoiceField(label="Cor da Pele", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        super().__init__(*args, **kwargs)
+
+    def save(self):
+        if self.user is None:
+            return None
+
+        return {
+            "clothesVariant": self.cleaned_data.get("clothesVariant"),
+            "eyesVariant": self.cleaned_data.get("eyesVariant"),
+            "glassesVariant": self.cleaned_data.get("glassesVariant"),
+            "hairVariant": self.cleaned_data.get("hairVariant"),
+            "hatVariant": self.cleaned_data.get("hatVariant"),
+            "mouthVariant": self.cleaned_data.get("mouthVariant"),
+            "beardVariant": self.cleaned_data.get("beardVariant"),
+            "hairColor": self.cleaned_data.get("hairColor"),
+            "clothingColor": self.cleaned_data.get("clothingColor"),
+            "eyesColor": self.cleaned_data.get("eyesColor"),
+            "glassesColor": self.cleaned_data.get("glassesColor"),
+            "hatColor": self.cleaned_data.get("hatColor"),
+            "mouthColor": self.cleaned_data.get("mouthColor"),
+            "skinColor": self.cleaned_data.get("skinColor")
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        optional_fields = ["glassesVariant", "hatVariant", "beardVariant"]
+        
+        for field in optional_fields:
+            value = cleaned_data.get(field)
+            if value == "None" or value == "":
+                cleaned_data[field] = None                
+
+        return cleaned_data

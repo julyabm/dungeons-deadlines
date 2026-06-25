@@ -4,9 +4,8 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 
 from django.utils import timezone
-
 from core.services.game import process_overdue
-
+from core.services.avatar_build import get_avatar_svg_url
 
 class ActiveUserMixin(LoginRequiredMixin):
     def dispatch(self, request, *args, **kwargs):
@@ -32,7 +31,28 @@ class GameContextMixin(ActiveUserMixin):
         context = super().get_context_data(**kwargs)
         if self.request.user.is_authenticated and hasattr(self.request.user, 'avatar'):
             avatar = self.request.user.avatar
+            avatar_url = get_avatar_svg_url(
+                self.request.user.id, 
+                **{
+                    "clothesVariant": avatar.clothesVariant,
+                    "eyesVariant": avatar.eyesVariant,
+                    "glassesVariant": avatar.glassesVariant,
+                    "hairVariant": avatar.hairVariant,
+                    "hatVariant": avatar.hatVariant,
+                    "mouthVariant": avatar.mouthVariant,
+                    "beardVariant": avatar.beardVariant,
+                    "hairColor": avatar.hairColor,
+                    "clothingColor": avatar.clothingColor,
+                    "eyesColor": avatar.eyesColor,
+                    "glassesColor": avatar.glassesColor,
+                    "hatColor": avatar.hatColor,
+                    "mouthColor": avatar.mouthColor,
+                    "skinColor": avatar.skinColor
+                }
+            )
+
             context['avatar'] = avatar
+            context['avatar_url'] = avatar_url
             context['xp_to_next'] = avatar.xp_to_next
             context['active_xp_boost'] = avatar.active_effects.filter(
                 kind='xp_boost',

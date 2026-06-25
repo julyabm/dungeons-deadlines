@@ -18,10 +18,18 @@
       <form method="post" action="{% url 'avatar_appearance' %}" class="profile-appearance-form" id="appearance-form">
         {% csrf_token %}
         {% for field in appearance_form %}
-        <div class="form-group">
-          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-          {{ field }}
-        </div>
+          {% if "Cor" not in field.label %}
+            <div class="form-group">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            </div>
+          {% endif %}
+          {% if "Cor" in field.label %}
+            <div class="form-group">
+              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+              {{ field }}
+            </div>
+          {% endif %}
         {% endfor %}
       </form>
     </div>
@@ -35,7 +43,6 @@
           <div class="glass-card shop-item">
             <div class="shop-item-icon">{{ row.item.icon }}</div>
             <div class="shop-item-name">{{ row.item.name }}</div>
-            <div class="text-muted" style="font-size:0.75rem;">Slot: {{ row.item.get_cosmetic_slot_display }}</div>
             <p class="shop-item-desc">{{ row.item.description }}</p>
             <div class="shop-item-footer">
               {% if row.is_equipped %}
