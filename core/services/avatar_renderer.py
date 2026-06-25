@@ -2,17 +2,23 @@ import io
 from pathlib import Path
 
 from django.conf import settings
+from django.db.models import Case, IntegerField, Value, When
 from PIL import Image, ImageDraw
 
 from core.models import Inventory
 
-AVATAR_SIZE = (128, 128)
+AVATAR_SIZE = (192, 192)
+LOGICAL_SIZE = (48, 48)
 LAYERS_DIR = Path(settings.BASE_DIR) / 'core' / 'static' / 'avatar' / 'layers'
 
 SKIN_COLORS = {
     'light': (245, 208, 169),
     'medium': (198, 134, 88),
     'dark': (120, 72, 48),
+    'pale': (255, 224, 210),
+    'tan': (210, 161, 100),
+    'olive': (168, 130, 80),
+    'deep': (75, 40, 20),
 }
 
 HAIR_COLORS = {
@@ -20,6 +26,12 @@ HAIR_COLORS = {
     'brown': (90, 55, 30),
     'blonde': (220, 180, 80),
     'red': (180, 60, 40),
+    'white': (240, 240, 240),
+    'gray': (160, 160, 160),
+    'blue': (60, 100, 210),
+    'green': (60, 160, 80),
+    'purple': (130, 60, 180),
+    'pink': (220, 100, 150),
 }
 
 OUTLINE = (20, 20, 30)
@@ -27,36 +39,63 @@ SHIRT_COLOR = (70, 100, 180)
 
 
 def _new_canvas():
-    image = Image.new('RGBA', AVATAR_SIZE, (0, 0, 0, 0))
+    image = Image.new('RGBA', LOGICAL_SIZE, (0, 0, 0, 0))
     return image, ImageDraw.Draw(image)
 
 
 def _draw_base_avatar(avatar):
-    image, draw = _new_canvas()
+    image, draw = _new_canvas()  # 48×48 RGBA canvas
     skin = SKIN_COLORS.get(avatar.skin_tone, SKIN_COLORS['medium'])
     hair = HAIR_COLORS.get(avatar.hair_color, HAIR_COLORS['brown'])
 
-    draw.rectangle((44, 72, 84, 118), fill=SHIRT_COLOR, outline=OUTLINE)
-    draw.ellipse((40, 34, 88, 82), fill=skin, outline=OUTLINE)
+    # --- Body (shirt) ---
+    draw.rectangle([16, 28, 31, 47], fill=SHIRT_COLOR, outline=OUTLINE)
 
-    if avatar.hair_style == 'short':
-        draw.arc((36, 18, 92, 70), start=200, end=340, fill=hair, width=10)
-        draw.rectangle((38, 28, 90, 44), fill=hair)
-    elif avatar.hair_style == 'long':
-        draw.arc((34, 14, 94, 74), start=180, end=360, fill=hair, width=12)
-        draw.rectangle((36, 30, 92, 52), fill=hair)
-        draw.rectangle((34, 44, 44, 96), fill=hair, outline=OUTLINE)
-        draw.rectangle((84, 44, 94, 96), fill=hair, outline=OUTLINE)
+    # --- Head (ellipse) ---
+    draw.ellipse([13, 8, 34, 28], fill=skin, outline=OUTLINE)
+
+    # --- Hair ---
+    hair_style = avatar.hair_style
+    if hair_style == 'bald':
+        pass  # no hair
+    elif hair_style == 'short':
+        # Arc across crown + strip
+        draw.arc([12, 4, 35, 22], start=200, end=340, fill=hair, width=3)
+        draw.rectangle([13, 8, 34, 14], fill=hair, outline=OUTLINE)
+    elif hair_style == 'long':
+        # Arc + crown strip + side panels
+        draw.arc([11, 3, 36, 23], start=180, end=360, fill=hair, width=3)
+        draw.rectangle([13, 8, 34, 15], fill=hair, outline=OUTLINE)
+        draw.rectangle([11, 14, 15, 35], fill=hair, outline=OUTLINE)
+        draw.rectangle([32, 14, 36, 35], fill=hair, outline=OUTLINE)
+    elif hair_style == 'spiky':
+        for x in (14, 19, 24, 29):
+            draw.polygon([(x, 14), (x + 2, 6), (x + 4, 14)], fill=hair, outline=OUTLINE)
+    elif hair_style == 'curly':
+        # Four small filled ellipses arranged in arc above head
+        for cx, cy in [(16, 11), (20, 7), (25, 7), (30, 10)]:
+            draw.ellipse([cx - 3, cy - 3, cx + 3, cy + 3], fill=hair, outline=OUTLINE)
+    elif hair_style == 'ponytail':
+        # Crown strip + tail
+        draw.rectangle([13, 8, 34, 13], fill=hair, outline=OUTLINE)
+        draw.rectangle([30, 13, 35, 28], fill=hair, outline=OUTLINE)
+    elif hair_style == 'mohawk':
+        # Narrow tall crest centered on crown (cols 22-25, rows 2-10)
+        draw.rectangle([22, 2, 25, 10], fill=hair, outline=OUTLINE)
     else:
-        for x in range(42, 87, 8):
-            draw.polygon([(x, 24), (x + 4, 12), (x + 8, 24)], fill=hair, outline=OUTLINE)
+        # Fallback: short
+        draw.arc([12, 4, 35, 22], start=200, end=340, fill=hair, width=3)
+        draw.rectangle([13, 8, 34, 14], fill=hair, outline=OUTLINE)
 
-    draw.ellipse((52, 52, 60, 60), fill=(255, 255, 255, 255))
-    draw.ellipse((68, 52, 76, 60), fill=(255, 255, 255, 255))
-    draw.ellipse((54, 54, 58, 58), fill=OUTLINE)
-    draw.ellipse((70, 54, 74, 58), fill=OUTLINE)
-    draw.arc((54, 62, 74, 74), start=10, end=170, fill=OUTLINE, width=2)
+    # --- Eyes ---
+    draw.ellipse([17, 18, 21, 20], fill=OUTLINE)
+    draw.ellipse([26, 18, 30, 20], fill=OUTLINE)
 
+    # --- Mouth (smile arc) ---
+    draw.arc([18, 22, 29, 25], start=10, end=170, fill=OUTLINE, width=1)
+
+    # --- Upscale to 192×192 with pixel art (NEAREST) ---
+    image = image.resize(AVATAR_SIZE, Image.Resampling.NEAREST)
     return image
 
 
@@ -77,7 +116,16 @@ def _equipped_cosmetics(avatar):
             quantity__gt=0,
         )
         .select_related('item')
-        .order_by('item__cosmetic_slot')
+        .annotate(
+            slot_order=Case(
+                When(item__cosmetic_slot='body', then=Value(0)),
+                When(item__cosmetic_slot='face', then=Value(1)),
+                When(item__cosmetic_slot='head', then=Value(2)),
+                default=Value(9),
+                output_field=IntegerField(),
+            )
+        )
+        .order_by('slot_order')
     )
 
 

@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-t9mcym$yx(l)!4q0m)tr6&kr%(owk2@g_g79n4*ayvvk!big7-'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = []
 
@@ -86,7 +86,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'dungeons_deadlines',
         'USER': 'postgres',
-        'PASSWORD': 'julya',
+        'PASSWORD': 'pass',
         'HOST': 'localhost',
         'PORT': '5432',
     }
