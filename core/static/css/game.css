@@ -39,7 +39,7 @@ html, body {
 }
 
 a { color: var(--primary); text-decoration: none; }
-a:hover { text-decoration: underline; }
+a:hover { text-decoration: none; }
 
 .container { max-width: 72rem; margin: 0 auto; padding: 0 1.5rem; }
 

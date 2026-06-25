@@ -1,10 +1,11 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block body %}
 <div class="app-layout">
   <aside class="app-sidebar">
     <a href="{% url 'dashboard' %}" class="app-sidebar-logo">
-      <span>⚔️</span> Dungeons & Deadlines
+      <img src="{% static 'assets/icon.png' %}" alt="icon" width="48"> Dungeons & Deadlines
     </a>
     <nav class="app-nav">
       <a href="{% url 'dashboard' %}" class="app-nav-link{% if request.resolver_match.url_name == 'dashboard' %} active{% endif %}">📊 Dashboard</a>
