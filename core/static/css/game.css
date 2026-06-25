@@ -177,7 +177,7 @@ a:hover { text-decoration: none; }
   border-radius: calc(var(--radius) - 2px);
   border: 1px solid var(--border);
   image-rendering: pixelated;
-  background: oklch(0.16 0.06 270 / 0.6);
+  background: oklch(0.55 0.08 276.79 / 0.6);
   object-fit: cover;
 }
 .status-bar-group { min-width: 8.75rem; flex: 1; }
@@ -322,7 +322,7 @@ a:hover { text-decoration: none; }
   padding: 1rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: oklch(0.16 0.06 270 / 0.6);
+  background: oklch(0.55 0.08 276.79 / 0.6);
 }
 .friend-modal-avatar img {
   width: 10rem;
@@ -348,7 +348,7 @@ a:hover { text-decoration: none; }
   padding: 1rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: oklch(0.16 0.06 270 / 0.6);
+  background: oklch(0.55 0.08 276.79 / 0.6);
 }
 .profile-avatar-image {
   width: 8rem;
@@ -370,7 +370,7 @@ a:hover { text-decoration: none; }
   border-radius: calc(var(--radius) - 2px);
   border: 1px solid var(--border);
   image-rendering: pixelated;
-  background: oklch(0.16 0.06 270 / 0.6);
+  background: oklch(0.55 0.08 276.79 / 0.6);
 }
 
 .empty-state { text-align: center; padding: 2rem; color: var(--muted-foreground); font-size: 0.875rem; }

@@ -50,37 +50,6 @@ class Usuario(AbstractUser):
 
 
 class Avatar(models.Model):
-    SKIN_TONE_CHOICES = [
-        ('light',  'Tom de pele 1'),
-        ('medium', 'Tom de pele 2'),
-        ('dark',   'Tom de pele 3'),
-        ('pale',   'Tom de pele 4'),
-        ('tan',    'Tom de pele 5'),
-        ('olive',  'Tom de pele 6'),
-        ('deep',   'Tom de pele 7'),
-    ]
-    HAIR_STYLE_CHOICES = [
-        ('short',    'Curto'),
-        ('long',     'Longo'),
-        ('spiky',    'Espetado'),
-        ('curly',    'Cacheado'),
-        ('bald',     'Careca'),
-        ('ponytail', 'Rabo de Cavalo'),
-        ('mohawk',   'Moicano'),
-    ]
-    HAIR_COLOR_CHOICES = [
-        ('black',  'Preto'),
-        ('brown',  'Castanho'),
-        ('blonde', 'Loiro'),
-        ('red',    'Ruivo'),
-        ('white',  'Branco'),
-        ('gray',   'Cinza'),
-        ('blue',   'Azul'),
-        ('green',  'Verde'),
-        ('purple', 'Roxo'),
-        ('pink',   'Rosa'),
-    ]
-
     user = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='avatar')
     hp = models.IntegerField(default=100, validators=[MinValueValidator(0)], verbose_name='Pontos de Vida')
     max_hp = models.IntegerField(default=100, validators=[MinValueValidator(1)], verbose_name='HP Máximo')
@@ -88,9 +57,22 @@ class Avatar(models.Model):
     xp = models.IntegerField(default=0, verbose_name='Experiência')
     total_xp = models.IntegerField(default=0, verbose_name='XP Total')
     gold = models.IntegerField(default=0, verbose_name='Ouro')
-    skin_tone = models.CharField(max_length=10, choices=SKIN_TONE_CHOICES, default='medium', verbose_name='Tom de pele')
-    hair_style = models.CharField(max_length=10, choices=HAIR_STYLE_CHOICES, default='short', verbose_name='Estilo de cabelo')
-    hair_color = models.CharField(max_length=10, choices=HAIR_COLOR_CHOICES, default='brown', verbose_name='Cor do cabelo')
+
+    clothesVariant = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de Roupa")
+    eyesVariant = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de Olhos")
+    glassesVariant = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de Óculos")
+    hairVariant = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de Cabelo")
+    hatVariant = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de Boné")
+    mouthVariant = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de Boca")
+    beardVariant = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de Barba")
+
+    hairColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor de Cabelo")
+    clothingColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor da Roupa")
+    eyesColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor dos Olhos")
+    glassesColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor dos Óculos")
+    hatColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor do boné")
+    mouthColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor da boca")
+    skinColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor da pele")
 
     def __str__(self):
         return f'Avatar de {self.user.username} - Lvl {self.level}'
@@ -142,11 +124,6 @@ class Item(models.Model):
         ('Equipamento', 'Equipamento'),
         ('Cosmético', 'Cosmético'),
     ]
-    COSMETIC_SLOT_CHOICES = [
-        ('head', 'Cabeça'),
-        ('body', 'Corpo'),
-        ('face', 'Rosto'),
-    ]
 
     slug = models.SlugField(max_length=50, unique=True, verbose_name='Identificador')
     name = models.CharField(max_length=100, verbose_name='Nome do Item')
@@ -155,14 +132,6 @@ class Item(models.Model):
     description = models.TextField(verbose_name='Descrição do Item')
     bonus_value = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, verbose_name='Bônus')
     icon = models.CharField(max_length=10, default='📦', verbose_name='Ícone')
-    cosmetic_slot = models.CharField(
-        max_length=10,
-        choices=COSMETIC_SLOT_CHOICES,
-        blank=True,
-        null=True,
-        verbose_name='Slot cosmético',
-    )
-    layer_file = models.CharField(max_length=100, blank=True, default='', verbose_name='Arquivo de camada')
 
     def __str__(self):
         return self.name

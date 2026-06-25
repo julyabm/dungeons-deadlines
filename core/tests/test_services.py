@@ -106,8 +106,6 @@ class GameServiceTests(TestCase):
             name='Hat A',
             price=50,
             item_type='Cosmético',
-            cosmetic_slot='head',
-            layer_file='wizard_hat.png',
             description='Hat',
             icon='🎩',
         )
@@ -116,8 +114,6 @@ class GameServiceTests(TestCase):
             name='Hat B',
             price=60,
             item_type='Cosmético',
-            cosmetic_slot='head',
-            layer_file='crown.png',
             description='Crown',
             icon='👑',
         )

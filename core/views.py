@@ -1,12 +1,11 @@
+from django.db.models import Q
+from django.utils import timezone
 from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.db.models import Q
-from django.http import Http404, HttpResponse, HttpResponseBadRequest, JsonResponse
-from django.http.request import RAISE_ERROR, BadRequest
-from django.shortcuts import get_object_or_404, redirect, render
+from django.http import Http404
 from django.urls import reverse, reverse_lazy
-from django.utils import timezone
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.generic import (
     CreateView,
     DeleteView,
@@ -19,8 +18,8 @@ from django.views.generic import (
 
 from core.forms import AvatarAppearanceForm, FriendRequestForm, RegisterForm, TaskForm
 from core.mixins import GameContextMixin, SuccessMessageMixin
-from core.models import Friendship, Inventory, Item, Task, Usuario
-from core.services.avatar_renderer import render_avatar_png
+from core.models import Avatar, Friendship, Inventory, Item, Task, Usuario
+from core.services.avatar_build import get_avatar_svg_url
 from core.services.game import (
     DIFFICULTIES,
     buy_item,
@@ -202,9 +201,29 @@ class ProfileView(GameContextMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        avatar = self.request.user.avatar
         items = context['inventory_items']
-        context['appearance_form'] = AvatarAppearanceForm(instance=avatar)
+        avatar = self.request.user.avatar
+        avatar_props = {
+            "clothesVariant": avatar.clothesVariant,
+            "eyesVariant": avatar.eyesVariant,
+            "glassesVariant": avatar.glassesVariant,
+            "hairVariant": avatar.hairVariant,
+            "hatVariant": avatar.hatVariant,
+            "mouthVariant": avatar.mouthVariant,
+            "beardVariant": avatar.beardVariant,
+            "hairColor": avatar.hairColor,
+            "clothingColor": avatar.clothingColor,
+            "eyesColor": avatar.eyesColor,
+            "glassesColor": avatar.glassesColor,
+            "hatColor": avatar.hatColor,
+            "mouthColor": avatar.mouthColor,
+            "skinColor": avatar.skinColor
+        }
+        context['avatar'] = avatar
+        context['appearance_form'] = AvatarAppearanceForm(
+            user=self.request.user,
+            initial=avatar_props
+        )
         context['cosmetic_items'] = [row for row in items if row.item.item_type == 'Cosmético']
         context['game_items'] = [row for row in items if row.item.item_type != 'Cosmético']
         context['equipped_cosmetics'] = {
@@ -217,22 +236,20 @@ class ProfileView(GameContextMixin, ListView):
 
 class AvatarAppearanceView(GameContextMixin, View):
     def post(self, request):
-        avatar = request.user.avatar
-        form = AvatarAppearanceForm(request.POST, instance=avatar)
-        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        try:
+            form = AvatarAppearanceForm(request.POST, user=request.user)
+            if form.is_valid():
+                avatar_params = form.save()
+                Avatar.objects.filter(user=request.user).update(**avatar_params)
+                messages.success(request, 'Aparência do avatar atualizada!')
+                return redirect("profile")
 
-        if form.is_valid():
-            form.save()
-            if is_ajax:
-                return JsonResponse({'ok': True})
-            messages.success(request, 'Aparência do avatar atualizada!')
-            return redirect('profile')
-
-        if is_ajax:
-            return JsonResponse({'ok': False, 'errors': form.errors}, status=400)
-
-        for error in form.errors.values():
-            messages.error(request, error.as_text())
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{form.fields[field].label}: {error}")
+        except Exception as ex:
+            print("AvatarAppearanceView post: " + str(ex))
+            messages.error(request, f"Erro ao atualizar seu avatar. Tente novamente.")
         return redirect('profile')
 
 
@@ -246,8 +263,27 @@ class AvatarImageView(LoginRequiredMixin, View):
         if target != viewer and not _can_view_avatar(viewer, target):
             raise Http404
 
-        png = render_avatar_png(target.avatar)
-        return HttpResponse(png, content_type='image/png')
+        return redirect(
+            get_avatar_svg_url(
+                self.request.user.id, 
+                **{
+                    "clothesVariant": target.avatar.clothesVariant,
+                    "eyesVariant": target.avatar.eyesVariant,
+                    "glassesVariant": target.avatar.glassesVariant,
+                    "hairVariant": target.avatar.hairVariant,
+                    "hatVariant": target.avatar.hatVariant,
+                    "mouthVariant": target.avatar.mouthVariant,
+                    "beardVariant": target.avatar.beardVariant,
+                    "hairColor": target.avatar.hairColor,
+                    "clothingColor": target.avatar.clothingColor,
+                    "eyesColor": target.avatar.eyesColor,
+                    "glassesColor": target.avatar.glassesColor,
+                    "hatColor": target.avatar.hatColor,
+                    "mouthColor": target.avatar.mouthColor,
+                    "skinColor": target.avatar.skinColor
+                }
+            )
+        )
 
 
 def _can_view_avatar(viewer, target):
