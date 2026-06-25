@@ -6,7 +6,7 @@
 {% block body %}
 <header class="landing-header container">
   <div class="landing-logo">
-    <span>⚔️</span>
+    <img src="{% static 'assets/icon.png' %}" alt="icon" width="48">
     <span>Dungeons & Deadlines</span>
   </div>
   <a href="{% url 'login' %}" class="btn btn-primary glow">Entrar</a>
@@ -14,7 +14,6 @@
 
 <main class="container">
   <section class="hero">
-    <span class="hero-badge">✨ Sistema de produtividade gamificado</span>
     <h1>
       Derrote a procrastinação
       <span class="hero-gradient">como um herói.</span>
