@@ -22,10 +22,6 @@ class Migration(migrations.Migration):
                 ('objects', core.models.UsuarioManager()),
             ],
         ),
-        migrations.RemoveField(
-            model_name='usuario',
-            name='is_admin',
-        ),
         migrations.AlterField(
             model_name='usuario',
             name='groups',

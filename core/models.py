@@ -51,20 +51,34 @@ class Usuario(AbstractUser):
 
 class Avatar(models.Model):
     SKIN_TONE_CHOICES = [
-        ('light', 'Claro'),
-        ('medium', 'Médio'),
-        ('dark', 'Escuro'),
+        ('light',  'Tom de pele 1'),
+        ('medium', 'Tom de pele 2'),
+        ('dark',   'Tom de pele 3'),
+        ('pale',   'Tom de pele 4'),
+        ('tan',    'Tom de pele 5'),
+        ('olive',  'Tom de pele 6'),
+        ('deep',   'Tom de pele 7'),
     ]
     HAIR_STYLE_CHOICES = [
-        ('short', 'Curto'),
-        ('long', 'Longo'),
-        ('spiky', 'Espetado'),
+        ('short',    'Curto'),
+        ('long',     'Longo'),
+        ('spiky',    'Espetado'),
+        ('curly',    'Cacheado'),
+        ('bald',     'Careca'),
+        ('ponytail', 'Rabo de Cavalo'),
+        ('mohawk',   'Moicano'),
     ]
     HAIR_COLOR_CHOICES = [
-        ('black', 'Preto'),
-        ('brown', 'Castanho'),
+        ('black',  'Preto'),
+        ('brown',  'Castanho'),
         ('blonde', 'Loiro'),
-        ('red', 'Ruivo'),
+        ('red',    'Ruivo'),
+        ('white',  'Branco'),
+        ('gray',   'Cinza'),
+        ('blue',   'Azul'),
+        ('green',  'Verde'),
+        ('purple', 'Roxo'),
+        ('pink',   'Rosa'),
     ]
 
     user = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='avatar')
@@ -131,6 +145,7 @@ class Item(models.Model):
     COSMETIC_SLOT_CHOICES = [
         ('head', 'Cabeça'),
         ('body', 'Corpo'),
+        ('face', 'Rosto'),
     ]
 
     slug = models.SlugField(max_length=50, unique=True, verbose_name='Identificador')
