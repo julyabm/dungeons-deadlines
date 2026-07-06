@@ -212,7 +212,7 @@ class ProfileView(GameContextMixin, ListView):
             "mouthVariant": avatar.mouthVariant,
             "beardVariant": avatar.beardVariant,
             "hairColor": avatar.hairColor,
-            "clothingColor": avatar.clothingColor,
+            "clothesColor": avatar.clothesColor,
             "eyesColor": avatar.eyesColor,
             "glassesColor": avatar.glassesColor,
             "hatColor": avatar.hatColor,
@@ -220,24 +220,26 @@ class ProfileView(GameContextMixin, ListView):
             "skinColor": avatar.skinColor
         }
         context['avatar'] = avatar
+        context['cosmetic_items'] = [row for row in items if row.item.item_type == 'Cosmético']
         context['appearance_form'] = AvatarAppearanceForm(
             user=self.request.user,
-            initial=avatar_props
+            cosmetic_items=context['cosmetic_items'],
+            initial=avatar_props,
         )
-        context['cosmetic_items'] = [row for row in items if row.item.item_type == 'Cosmético']
         context['game_items'] = [row for row in items if row.item.item_type != 'Cosmético']
-        context['equipped_cosmetics'] = {
-            row.item.cosmetic_slot: row
-            for row in items
-            if row.item.item_type == 'Cosmético' and row.is_equipped
-        }
         return context
 
 
 class AvatarAppearanceView(GameContextMixin, View):
     def post(self, request):
         try:
-            form = AvatarAppearanceForm(request.POST, user=request.user)
+            cosmetic_items = Inventory.objects.filter(
+                avatar=self.request.user.avatar,
+                quantity__gt=0,
+                item__item_type="Cosmético"
+            ).select_related('item')
+            
+            form = AvatarAppearanceForm(request.POST, user=request.user, cosmetic_items=cosmetic_items)
             if form.is_valid():
                 avatar_params = form.save()
                 Avatar.objects.filter(user=request.user).update(**avatar_params)
@@ -275,7 +277,7 @@ class AvatarImageView(LoginRequiredMixin, View):
                     "mouthVariant": target.avatar.mouthVariant,
                     "beardVariant": target.avatar.beardVariant,
                     "hairColor": target.avatar.hairColor,
-                    "clothingColor": target.avatar.clothingColor,
+                    "clothesColor": target.avatar.clothesColor,
                     "eyesColor": target.avatar.eyesColor,
                     "glassesColor": target.avatar.glassesColor,
                     "hatColor": target.avatar.hatColor,

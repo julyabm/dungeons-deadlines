@@ -251,13 +251,6 @@ def toggle_equip(inventory_row):
     if item.item_type not in ('Equipamento', 'Cosmético'):
         raise ValueError('Item não equipável')
 
-    if item.item_type == 'Cosmético' and not inventory_row.is_equipped:
-        Inventory.objects.filter(
-            avatar=inventory_row.avatar,
-            item__item_type='Cosmético',
-            is_equipped=True,
-        ).exclude(pk=inventory_row.pk).update(is_equipped=False)
-
     inventory_row.is_equipped = not inventory_row.is_equipped
     inventory_row.save(update_fields=['is_equipped'])
     return inventory_row

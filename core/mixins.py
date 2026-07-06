@@ -42,7 +42,7 @@ class GameContextMixin(ActiveUserMixin):
                     "mouthVariant": avatar.mouthVariant,
                     "beardVariant": avatar.beardVariant,
                     "hairColor": avatar.hairColor,
-                    "clothingColor": avatar.clothingColor,
+                    "clothesColor": avatar.clothesColor,
                     "eyesColor": avatar.eyesColor,
                     "glassesColor": avatar.glassesColor,
                     "hatColor": avatar.hatColor,

@@ -67,7 +67,7 @@ class Avatar(models.Model):
     beardVariant = models.CharField(max_length=255, blank=True, null=True, verbose_name="Tipo de Barba")
 
     hairColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor de Cabelo")
-    clothingColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor da Roupa")
+    clothesColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor da Roupa")
     eyesColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor dos Olhos")
     glassesColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor dos Óculos")
     hatColor = models.CharField(max_length=255, blank=True, null=True, verbose_name="Cor do boné")

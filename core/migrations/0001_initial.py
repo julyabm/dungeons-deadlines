@@ -77,7 +77,7 @@ class Migration(migrations.Migration):
                 ('mouthVariant', models.CharField(blank=True, max_length=255, null=True, verbose_name='Tipo de Boca')),
                 ('beardVariant', models.CharField(blank=True, max_length=255, null=True, verbose_name='Tipo de Barba')),
                 ('hairColor', models.CharField(blank=True, max_length=255, null=True, verbose_name='Cor de Cabelo')),
-                ('clothingColor', models.CharField(blank=True, max_length=255, null=True, verbose_name='Cor da Roupa')),
+                ('clothesColor', models.CharField(blank=True, max_length=255, null=True, verbose_name='Cor da Roupa')),
                 ('eyesColor', models.CharField(blank=True, max_length=255, null=True, verbose_name='Cor dos Olhos')),
                 ('glassesColor', models.CharField(blank=True, max_length=255, null=True, verbose_name='Cor dos Óculos')),
                 ('hatColor', models.CharField(blank=True, max_length=255, null=True, verbose_name='Cor do boné')),

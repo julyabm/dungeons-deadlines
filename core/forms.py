@@ -213,32 +213,62 @@ class AvatarAppearanceForm(forms.Form):
         (ColorOptions.PURPLE.value, "Roxo")
     ]
 
-    clothesVariant = forms.ChoiceField(label="Roupa", choices=CLOTHES_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
     eyesVariant = forms.ChoiceField(label="Olhos", choices=EYE_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
-    glassesVariant = forms.ChoiceField(label="Óculos", choices=GLASSES_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
     hairVariant = forms.ChoiceField(label="Cabelo", choices=HAIR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
-    hatVariant = forms.ChoiceField(label="Chapéu", choices=HAT_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
     mouthVariant = forms.ChoiceField(label="Boca", choices=MOUTH_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
-    beardVariant = forms.ChoiceField(label="Barba", choices=BEARD_CHOICES, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
     
     hairColor = forms.ChoiceField(label="Cor do Cabelo", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
-    clothingColor = forms.ChoiceField(label="Cor da Roupa", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
     eyesColor = forms.ChoiceField(label="Cor dos Olhos", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
-    glassesColor = forms.ChoiceField(label="Cor dos Óculos", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
-    hatColor = forms.ChoiceField(label="Cor do Chapéu", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
     mouthColor = forms.ChoiceField(label="Cor da Boca", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
     skinColor = forms.ChoiceField(label="Cor da Pele", choices=COLOR_CHOICES, widget=forms.Select(attrs={'class': 'form-input'}))
+    
+    glassesVariant = forms.ChoiceField(label="Óculos", choices=GLASSES_CHOICES, help_text="glasses", disabled=False, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    hatVariant = forms.ChoiceField(label="Chapéu", choices=HAT_CHOICES, help_text="hat", disabled=False, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    beardVariant = forms.ChoiceField(label="Barba", choices=BEARD_CHOICES, help_text="beard", disabled=False, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    clothesVariant = forms.ChoiceField(label="Roupa", choices=CLOTHES_CHOICES, help_text="shirt", disabled=False, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    
+    clothesColor = forms.ChoiceField(label="Cor da Roupa", choices=COLOR_CHOICES, help_text="shirt", disabled=False, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    glassesColor = forms.ChoiceField(label="Cor dos Óculos", choices=COLOR_CHOICES, help_text="glasses", disabled=False, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
+    hatColor = forms.ChoiceField(label="Cor do Chapéu", choices=COLOR_CHOICES, help_text="hat", disabled=False, required=False, widget=forms.Select(attrs={'class': 'form-input'}))
 
-    def __init__(self, *args, user=None, **kwargs):
+
+    def __init__(self, *args, user=None, cosmetic_items=[], **kwargs):
         self.user = user
+        self.cosmetic_items = cosmetic_items
         super().__init__(*args, **kwargs)
+
+        if not len(cosmetic_items):
+            form_fields_linked = [
+                field 
+                for _, field in self.fields.items() 
+                if len(field.help_text)
+            ]
+            for field in form_fields_linked:
+                field.disabled = True
+
+        for cosmetic in cosmetic_items:
+            if not cosmetic.is_equipped:
+                form_fields_linked = [
+                    field 
+                    for _, field in self.fields.items() 
+                    if field.help_text == cosmetic.item.slug
+                ]
+                for field in form_fields_linked:
+                    field.disabled = True
 
     def save(self):
         if self.user is None:
             return None
+        
+        clothes_variant = self.cleaned_data.get("clothesVariant")
+        clothesColor = self.cleaned_data.get("clothesColor")
+        if not clothes_variant:
+            clothes_variant = ClothesOptions.VARIANT01.value
+            clothesColor = ColorOptions.BLUE.value
 
+        print(clothes_variant, clothesColor)
         return {
-            "clothesVariant": self.cleaned_data.get("clothesVariant"),
+            "clothesVariant": clothes_variant,
             "eyesVariant": self.cleaned_data.get("eyesVariant"),
             "glassesVariant": self.cleaned_data.get("glassesVariant"),
             "hairVariant": self.cleaned_data.get("hairVariant"),
@@ -246,7 +276,7 @@ class AvatarAppearanceForm(forms.Form):
             "mouthVariant": self.cleaned_data.get("mouthVariant"),
             "beardVariant": self.cleaned_data.get("beardVariant"),
             "hairColor": self.cleaned_data.get("hairColor"),
-            "clothingColor": self.cleaned_data.get("clothingColor"),
+            "clothesColor": clothesColor,
             "eyesColor": self.cleaned_data.get("eyesColor"),
             "glassesColor": self.cleaned_data.get("glassesColor"),
             "hatColor": self.cleaned_data.get("hatColor"),
@@ -264,3 +294,39 @@ class AvatarAppearanceForm(forms.Form):
                 cleaned_data[field] = None                
 
         return cleaned_data
+
+    @property
+    def paginated_fields(self):
+        """
+        Agrupa os campos (variantes+cores ou cores isoladas) e os divide
+        em 'páginas/etapas' de no máximo 3 itens cada.
+        """
+        all_groups = []
+        rendered_colors = set()
+
+        for name, field in self.fields.items():
+            if "Variant" in name:
+                base_name = name.replace("Variant", "")
+                color_name = f"{base_name}Color"
+                
+                group = {
+                    "is_grouped": True,
+                    "label": field.label,
+                    "variant_field": self[name],
+                    "color_field": self[color_name] if color_name in self.fields else None
+                }
+                if color_name in self.fields:
+                    rendered_colors.add(color_name)
+                all_groups.append(group)
+
+        for name, field in self.fields.items():
+            if "Color" in name and name not in rendered_colors:
+                all_groups.append({
+                    "is_grouped": False,
+                    "label": field.label,
+                    "color_field": self[name]
+                })
+
+        chunk_size = 3
+        pages = [all_groups[i:i + chunk_size] for i in range(0, len(all_groups), chunk_size)]
+        return pages

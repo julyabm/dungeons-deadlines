@@ -17,20 +17,59 @@
       </div>
       <form method="post" action="{% url 'avatar_appearance' %}" class="profile-appearance-form" id="appearance-form">
         {% csrf_token %}
-        {% for field in appearance_form %}
-          {% if "Cor" not in field.label %}
-            <div class="form-group">
-              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-              {{ field }}
+        
+        <div class="steps-navigation">
+          <button type="button" id="prev-step-btn" class="btn btn-secondary btn-sm" disabled>&larr;</button>
+          <span id="step-indicator">Personalização 1/{{ appearance_form.paginated_fields|length }}</span>
+          <button type="button" id="next-step-btn" class="btn btn-secondary btn-sm">&rarr;</button>
+        </div>
+
+        <div class="form-steps-container">
+          {% for page in appearance_form.paginated_fields %}
+            <div class="form-step-page {% if forloop.first %}active{% endif %}" data-page-index="{{ forloop.counter }}">
+              
+              {% for group in page %}
+                {% if group.is_grouped %}
+                  <div class="form-group variant-color-group">
+                    <label for="{{ group.variant_field.id_for_label }}">{{ group.label }}</label>
+                    <div class="variant-select-container">{{ group.variant_field }}</div>
+                    {% if group.color_field %}
+                      <div class="color-carousel-wrapper" style="margin-top: 8px;">
+                        <button type="button" class="carousel-nav-btn prev" aria-label="Anterior">&lsaquo;</button>
+                        <div class="color-palette-grid" data-target-id="{{ group.color_field.id_for_label }}">
+                          {% for value, text in group.color_field.field.choices %}
+                            {% if value %} 
+                              <button type="button" class="color-square {% if group.color_field.value == value %}active{% endif %}" style="background-color: #{{ value }};" data-value="{{ value }}" title="{{ text }}"></button>
+                            {% endif %}
+                          {% endfor %}
+                        </div>
+                        <button type="button" class="carousel-nav-btn next" aria-label="Próximo">&rsaquo;</button>
+                      </div>
+                      <div class="hidden-select-container" style="display: none;">{{ group.color_field }}</div>
+                    {% endif %}
+                  </div>
+                {% else %}
+                  <div class="form-group color-picker-group">
+                    <label>{{ group.label }}</label>
+                    <div class="hidden-select-container" style="display: none;">{{ group.color_field }}</div>
+                    <div class="color-carousel-wrapper">
+                      <button type="button" class="carousel-nav-btn prev" aria-label="Anterior">&lsaquo;</button>
+                      <div class="color-palette-grid" data-target-id="{{ group.color_field.id_for_label }}">
+                        {% for value, text in group.color_field.field.choices %}
+                          {% if value %} 
+                            <button type="button" class="color-square {% if group.color_field.value == value %}active{% endif %}" style="background-color: #{{ value }};" data-value="{{ value }}" title="{{ text }}"></button>
+                          {% endif %}
+                        {% endfor %}
+                      </div>
+                      <button type="button" class="carousel-nav-btn next" aria-label="Próximo">&rsaquo;</button>
+                    </div>
+                  </div>
+                {% endif %}
+              {% endfor %}
+
             </div>
-          {% endif %}
-          {% if "Cor" in field.label %}
-            <div class="form-group">
-              <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-              {{ field }}
-            </div>
-          {% endif %}
-        {% endfor %}
+          {% endfor %}
+        </div>
       </form>
     </div>
 
@@ -111,6 +150,74 @@
   if (!form || !preview) return;
 
   let saving = false;
+
+  let currentPage = 1;
+  const pages = form.querySelectorAll('.form-step-page');
+  const totalPages = pages.length;
+  const prevBtn = document.getElementById('prev-step-btn');
+  const nextBtn = document.getElementById('next-step-btn');
+  const indicator = document.getElementById('step-indicator');
+
+  function updatePageVisibility() {
+    pages.forEach(page => {
+      if (parseInt(page.getAttribute('data-page-index')) === currentPage) {
+        page.classList.add('active');
+        
+        page.querySelectorAll('.color-palette-grid').forEach(function (grid) {
+          const activeSquare = grid.querySelector('.color-square.active');
+          if (activeSquare) {
+            setTimeout(() => {
+              grid.scrollLeft = activeSquare.offsetLeft - grid.offsetLeft;
+            }, 50);
+          }
+        });
+
+      } else {
+        page.classList.remove('active');
+      }
+    });
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+    indicator.textContent = `Personalização ${currentPage}/${totalPages}`;
+  }
+
+  if (prevBtn && nextBtn) {
+    prevBtn.addEventListener('click', () => {
+      if (currentPage > 1) { currentPage--; updatePageVisibility(); }
+    });
+    nextBtn.addEventListener('click', () => {
+      if (currentPage < totalPages) { currentPage++; updatePageVisibility(); }
+    });
+  }
+  
+  form.querySelectorAll('.color-palette-grid').forEach(function (grid) {
+    const targetSelectId = grid.getAttribute('data-target-id');
+    const select = document.getElementById(targetSelectId);
+    if (!select) return;
+
+    const activeSquare = grid.querySelector('.color-square.active');
+    if (activeSquare) {
+      setTimeout(() => { grid.scrollLeft = activeSquare.offsetLeft - grid.offsetLeft; }, 100);
+    }
+
+    const wrapper = grid.closest('.color-carousel-wrapper');
+    if (wrapper) {
+      const step = (36 + 8) * 5;
+      wrapper.querySelector('.carousel-nav-btn.prev').addEventListener('click', () => { grid.scrollLeft -= step; });
+      wrapper.querySelector('.carousel-nav-btn.next').addEventListener('click', () => { grid.scrollLeft += step; });
+    }
+
+    grid.querySelectorAll('.color-square').forEach(function (square) {
+      square.addEventListener('click', function () {
+        if (saving || select.disabled) return;
+        grid.querySelectorAll('.color-square').forEach(el => el.classList.remove('active'));
+        square.classList.add('active');
+        select.value = square.getAttribute('data-value');
+        select.dispatchEvent(new Event('change'));
+      });
+    });
+  });
 
   form.querySelectorAll('select').forEach(function (select) {
     select.addEventListener('change', function () {
