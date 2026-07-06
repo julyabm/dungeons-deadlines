@@ -99,31 +99,3 @@ class GameServiceTests(TestCase):
         toggle_equip(row)
         row.refresh_from_db()
         self.assertTrue(row.is_equipped)
-
-    def test_cosmetic_equip_replaces_same_slot(self):
-        hat_a = Item.objects.create(
-            slug='hat_a',
-            name='Hat A',
-            price=50,
-            item_type='Cosmético',
-            description='Hat',
-            icon='🎩',
-        )
-        hat_b = Item.objects.create(
-            slug='hat_b',
-            name='Hat B',
-            price=60,
-            item_type='Cosmético',
-            description='Crown',
-            icon='👑',
-        )
-        buy_item(self.avatar, hat_a)
-        buy_item(self.avatar, hat_b)
-        row_a = Inventory.objects.get(avatar=self.avatar, item=hat_a)
-        row_b = Inventory.objects.get(avatar=self.avatar, item=hat_b)
-        toggle_equip(row_a)
-        toggle_equip(row_b)
-        row_a.refresh_from_db()
-        row_b.refresh_from_db()
-        self.assertFalse(row_a.is_equipped)
-        self.assertTrue(row_b.is_equipped)

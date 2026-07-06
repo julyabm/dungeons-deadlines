@@ -10,12 +10,40 @@ Um aplicativo web que combina **gamificação RPG** com **gerenciamento de taref
 
 ## Instalação
 
-### 1. Pré-requisitos
+
+### 2. Como rodar o projeto?
+
+Existem 2 opções disponíveis para rodar o projeto:
+
+### Opção 1: Rodando com Docker (Recomendado)
+Esta opção não exige que você tenha Python ou PostgreSQL instalados fisicamente na sua máquina. Tudo rodará isolado dentro de containers.
+
+#### 1.1 Pré-requisitos
+* **Docker** instalado ([Instruções de instalação](https://docs.docker.com/get-docker/))
+* **Docker Compose** instalado (já vem embutido no Docker Desktop)
+
+#### 1.2 Inicialização rápida
+Na pasta raiz do projeto (onde estão localizados o `Dockerfile` e o `docker-compose.yml`), execute o comando abaixo no seu terminal:
+
+```bash
+docker compose up --build
+```
+
+#### 1.3 Utilizando a plataforma
+Acesse a [aplicação local](https://localhost:8000) e crie um usuário para você, ou utilize o administrador criado por padrão:
+```text
+email: admin@exemplo.com
+senha: admin
+```
+---
+### Opção 2: rodando localmente
+
+#### 2.1 Pré-requisitos
 
 - Python 3.13+
 - PostgreSQL instalado e rodando
 
-### 2. Ambiente virtual
+#### 2.2 Ambiente virtual
 
 **Windows (PowerShell):**
 ```powershell
@@ -29,21 +57,22 @@ python3 -m venv .venv
 source .venv/Scripts/activate
 ```
 
-### 3. Dependências
+#### 2.3 Dependências
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Banco de dados
+#### 2.4 Credenciais de uso
 
-Edite `dungeons_deadlines/settings.py` com suas credenciais PostgreSQL e crie o banco:
+Caso opte por rodar a aplicação localmente, renomeie o arquivo `.env.example` para `.env` 
+e ajuste as credenciais conforme o desejado. Crie também o banco de dados postgres na sua máquina:
 
 ```sql
 CREATE DATABASE dungeons_deadlines;
 ```
 
-### 5. Migrations e dados iniciais
+#### 2.5 Migrations e dados iniciais
 
 ```bash
 python manage.py migrate
@@ -51,13 +80,13 @@ python manage.py seed_items
 python manage.py createsuperuser
 ```
 
-### 6. Servidor
+#### 2.6 Servidor
 
 ```bash
 python manage.py runserver --insecure
 ```
 
-Acesse: `http://127.0.0.1:8000/`
+Acesse a [aplicação local](https://localhost:8000).
 
 ## Rotas da aplicação
 
